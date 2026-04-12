@@ -165,9 +165,102 @@ img.preview, img.detail-shot{max-width:100%;border-radius:12px;margin-top:10px;b
   .grid-2{grid-template-columns:1fr}
   .detail-grid{grid-template-columns:1fr 1fr}
 }
+
+.auth-shell{
+  min-height:100vh;display:grid;place-items:center;padding:22px;
+}
+.auth-card{
+  width:min(960px,100%);display:grid;grid-template-columns:1.1fr .9fr;
+  border:1px solid var(--line);border-radius:28px;overflow:hidden;
+  background:linear-gradient(180deg, rgba(15,23,38,.96), rgba(10,17,31,.98));
+  box-shadow:0 24px 48px rgba(0,0,0,.30);
+}
+.auth-left{
+  padding:34px;
+  background:
+    radial-gradient(500px 220px at 10% 0%, rgba(212,175,55,.12), transparent 45%),
+    linear-gradient(180deg, rgba(20,31,52,.92), rgba(12,20,35,.96));
+  border-right:1px solid var(--line);
+}
+.auth-left h1{margin:0;color:var(--gold);font-size:32px;line-height:1.05}
+.auth-left p{margin:12px 0 0;color:var(--muted);max-width:42ch;line-height:1.5}
+.auth-bullets{display:grid;gap:12px;margin-top:24px}
+.auth-bullet{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:16px;padding:14px}
+.auth-bullet strong{display:block;margin-bottom:6px}
+.auth-right{padding:26px}
+.auth-tabs{display:flex;gap:10px;margin-bottom:18px}
+.auth-tab{
+  flex:1;padding:11px 14px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);color:var(--text);border-radius:14px;font-weight:800;cursor:pointer;
+}
+.auth-tab.active{
+  background:linear-gradient(180deg, rgba(212,175,55,.18), rgba(212,175,55,.08));
+  border-color:rgba(212,175,55,.35);color:#fff6d1;
+}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.user-pill{
+  padding:8px 10px;border:1px solid var(--line);border-radius:999px;
+  background:rgba(255,255,255,.03);color:var(--muted);font-size:12px
+}
+@media (max-width:820px){
+  .auth-card{grid-template-columns:1fr}
+  .auth-left{border-right:none;border-bottom:1px solid var(--line)}
+}
+
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
+
 <body>
+<div id="authShell" class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-left">
+      <h1>XAUUSD Elite Journal</h1>
+      <p>Sign in to access your cloud-synced journal, trades, screenshots, and analytics from anywhere.</p>
+      <div class="auth-bullets">
+        <div class="auth-bullet"><strong>Cloud Sync</strong>Your trades and settings save to your account.</div>
+        <div class="auth-bullet"><strong>Secure Access</strong>Email and password sign-in backed by Supabase.</div>
+        <div class="auth-bullet"><strong>Same Premium App</strong>All your dashboard features stay intact.</div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="showLoginBtn" type="button">Log In</button>
+        <button class="auth-tab" id="showSignupBtn" type="button">Sign Up</button>
+      </div>
+
+      <div id="loginView">
+        <div class="field">
+          <label>Email</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password">
+        </div>
+        <button class="btn" id="loginBtn" type="button">Log In</button>
+        <p class="note" id="loginMsg" style="margin-top:12px"></p>
+      </div>
+
+      <div id="signupView" class="hidden">
+        <div class="field">
+          <label>Email</label>
+          <input id="signupEmail" type="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="signupPassword" type="password" placeholder="At least 6 characters">
+        </div>
+        <button class="btn" id="signupBtn" type="button">Create Account</button>
+        <p class="note" id="signupMsg" style="margin-top:12px"></p>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="appShell" class="app-shell hidden">
+
 
 <div class="app">
   <div class="header">
@@ -175,7 +268,7 @@ img.preview, img.detail-shot{max-width:100%;border-radius:12px;margin-top:10px;b
     <p>TradingView-style journal with edit, screenshots, analytics, and charts</p>
   </div>
 
-  <div class="top-strip">
+  <div class="top-actions" style="padding:0 14px 10px"><div class="user-pill" id="userEmailPill">Not signed in</div><button class="btn secondary" id="signOutBtn" type="button" style="width:auto;padding:10px 12px">Log Out</button></div><div class="top-strip">
     <div class="pill">Gold</div>
     <div class="pill">Locked Risk</div>
     <div class="pill">Trade Review</div>
@@ -414,6 +507,79 @@ img.preview, img.detail-shot{max-width:100%;border-radius:12px;margin-top:10px;b
 </nav>
 
 <script>
+
+const SUPABASE_URL = "https://wvptlyyxygoyipwbtzmp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_sjRDw_qvLc7FK6FxjPdaCQ_lIYyqWAz";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+let isHydrating = false;
+
+async function ensureTableInstructions(){
+  // no-op in client; schema setup is provided in README
+}
+
+function showAuth(){
+  $("authShell").classList.remove("hidden");
+  $("appShell").classList.add("hidden");
+}
+function showApp(){
+  $("authShell").classList.add("hidden");
+  $("appShell").classList.remove("hidden");
+}
+function setAuthTab(tab){
+  $("showLoginBtn").classList.toggle("active", tab === "login");
+  $("showSignupBtn").classList.toggle("active", tab === "signup");
+  $("loginView").classList.toggle("hidden", tab !== "login");
+  $("signupView").classList.toggle("hidden", tab !== "signup");
+}
+async function signUp(){
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+  const msg = $("signupMsg");
+  msg.textContent = "Creating account...";
+  const { error } = await supabaseClient.auth.signUp({ email, password });
+  msg.textContent = error ? error.message : "Account created. Check your email if confirmation is enabled, then log in.";
+}
+async function logIn(){
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  const msg = $("loginMsg");
+  msg.textContent = "Signing in...";
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  msg.textContent = error ? error.message : "Signed in.";
+}
+async function logOut(){
+  await saveCloudState();
+  await supabaseClient.auth.signOut();
+}
+async function loadCloudState(userId){
+  const { data, error } = await supabaseClient
+    .from("journal_states")
+    .select("app_state")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!error && data && data.app_state){
+    state = data.app_state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+}
+async function saveCloudState(){
+  if (!currentUser || isHydrating) return;
+  await supabaseClient
+    .from("journal_states")
+    .upsert({ user_id: currentUser.id, app_state: state }, { onConflict: "user_id" });
+}
+async function onAuthReady(){
+  const { data } = await supabaseClient.auth.getSession();
+  const session = data.session;
+  if (session?.user){
+    currentUser = session.user;
+    $("userEmailPill").textContent = currentUser.email || "Signed in";
+    isHydrating = true;
+  }
+}
+
 const STORAGE_KEY = "xauusd_elite_final_v1";
 const $ = id => document.getElementById(id);
 const num = v => Number(v || 0);
@@ -435,6 +601,7 @@ function loadState(){
 }
 function saveState(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  saveCloudState();
 }
 
 function badgeClass(value){
@@ -959,11 +1126,53 @@ $("detailModal").addEventListener("click", e => {
 });
 window.addEventListener("resize", renderStats);
 
+async function bootApp(){
+  const { data } = await supabaseClient.auth.getSession();
+  if (data.session?.user){
+    currentUser = data.session.user;
+    $("userEmailPill").textContent = currentUser.email || "Signed in";
+    isHydrating = true;
+    await loadCloudState(currentUser.id);
+    isHydrating = false;
+    $("startingBalance").value = num(state.startingBalance) > 0 ? state.startingBalance : 100;
+    clearTradeForm();
+    renderStats();
+    showApp();
+  } else {
+    showAuth();
+  }
+}
+supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+  if (session?.user){
+    currentUser = session.user;
+    $("userEmailPill").textContent = currentUser.email || "Signed in";
+    isHydrating = true;
+    await loadCloudState(currentUser.id);
+    isHydrating = false;
+    $("startingBalance").value = num(state.startingBalance) > 0 ? state.startingBalance : 100;
+    clearTradeForm();
+    renderStats();
+    showApp();
+  } else {
+    currentUser = null;
+    $("userEmailPill").textContent = "Not signed in";
+    showAuth();
+  }
+});
+$("showLoginBtn").addEventListener("click", ()=>setAuthTab("login"));
+$("showSignupBtn").addEventListener("click", ()=>setAuthTab("signup"));
+$("loginBtn").addEventListener("click", logIn);
+$("signupBtn").addEventListener("click", signUp);
+$("signOutBtn").addEventListener("click", logOut);
+
 (function init(){
+  setAuthTab("login");
   $("startingBalance").value = num(state.startingBalance) > 0 ? state.startingBalance : 100;
   clearTradeForm();
   renderStats();
+  bootApp();
 })();
 </script>
+</div>
 </body>
 </html>
