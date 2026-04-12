@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edge Trading Journal</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#08101d;
+    color:#fff;
+}
+
+/* Header */
+.clean-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    background:#0d1527;
+    border-bottom:1px solid #1f2a44;
+}
+
+.brand{
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* Dropdown */
+.dropdown{
+    position:relative;
+}
+
+.dropbtn{
+    background:#1f2a44;
+    color:#fff;
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.dropdown-content{
+    display:none;
+    position:absolute;
+    right:0;
+    background:#111a2f;
+    min-width:150px;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 10px 20px rgba(0,0,0,0.3);
+}
+
+.dropdown-content a{
+    display:block;
+    padding:12px;
+    text-decoration:none;
+    color:#fff;
+    font-size:14px;
+}
+
+.dropdown-content a:hover{
+    background:#1f2a44;
+}
+
+.dropdown:hover .dropdown-content{
+    display:block;
+}
+
+/* Sections */
+.section{
+    padding:40px;
+}
+</style>
+
+</head>
+<body>
+
+<header class="clean-header">
+    <div class="brand">Edge Trading Journal</div>
+
+    <nav>
+        <div class="dropdown">
+            <button class="dropbtn">Menu</button>
+            <div class="dropdown-content">
+                <a href="#dashboard">Dashboard</a>
+                <a href="#trade">Trade</a>
+                <a href="#overview">Overview</a>
+                <a href="#settings">Settings</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div id="dashboard" class="section">
+    <h2>Dashboard</h2>
+</div>
+
+<div id="trade" class="section">
+    <h2>Trade</h2>
+</div>
+
+<div id="overview" class="section">
+    <h2>Overview</h2>
+</div>
+
+<div id="settings" class="section">
+    <h2>Settings</h2>
+</div>
+
+</body>
+</html>
