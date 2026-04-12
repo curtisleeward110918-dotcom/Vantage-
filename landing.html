@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Edge Trading Journal</title>
+  <meta name="description" content="A professional trading journal built to help traders find their edge, track performance, and improve consistency." />
+  <style>
+    :root{
+      --bg:#08101d;
+      --bg2:#0d1527;
+      --panel:#10192d;
+      --panel2:#14203a;
+      --line:#26324a;
+      --gold:#d4af37;
+      --gold2:#b8911f;
+      --text:#f4f7fb;
+      --muted:#97a6c5;
+      --green:#22c55e;
+      --blue:#38bdf8;
+      --radius:22px;
+      --max:1180px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 360px at 8% 0%, rgba(212,175,55,.10), transparent 40%),
+        radial-gradient(700px 260px at 100% 0%, rgba(56,189,248,.06), transparent 34%),
+        linear-gradient(180deg,#07101d 0%,#0b1322 100%);
+    }
+    a{text-decoration:none;color:inherit}
+    .container{width:min(var(--max), calc(100% - 32px)); margin:0 auto}
+    .nav{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter:blur(12px);
+      background:rgba(8,16,29,.82);
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .nav-inner{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 0; gap:18px;
+    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.02em}
+    .brand-mark{
+      width:40px; height:40px; border-radius:13px;
+      display:grid; place-items:center;
+      background:linear-gradient(180deg, rgba(212,175,55,.18), rgba(212,175,55,.06));
+      border:1px solid rgba(212,175,55,.24);
+      color:var(--gold); font-weight:900;
+    }
+    .nav-links{display:flex; gap:18px; color:var(--muted); font-size:14px}
+    .nav-cta{
+      padding:11px 16px; border-radius:14px; font-weight:800;
+      background:linear-gradient(180deg, #d4af37 0%, #b8911f 100%);
+      color:#111827;
+    }
+
+    .hero{padding:58px 0 24px}
+    .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:28px; align-items:center}
+    .eyebrow{
+      display:inline-flex; padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(56,189,248,.24);
+      background:rgba(56,189,248,.08);
+      color:#9fd7ff; font-size:12px; font-weight:700;
+      margin-bottom:16px;
+    }
+    h1{
+      margin:0; font-size:58px; line-height:.98; letter-spacing:-.045em; max-width:11ch;
+    }
+    .hero p{
+      margin:18px 0 24px; max-width:56ch;
+      color:var(--muted); font-size:18px; line-height:1.6;
+    }
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:14px 18px; border-radius:16px; font-weight:800;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      color:var(--text);
+    }
+    .btn.primary{
+      border:none;
+      background:linear-gradient(180deg, #d4af37 0%, #b8911f 100%);
+      color:#111827;
+    }
+    .hero-points{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+    .pill{
+      padding:9px 12px; border-radius:999px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      color:var(--muted); font-size:12px; font-weight:700;
+    }
+
+    .device{
+      position:relative; overflow:hidden;
+      border:1px solid var(--line); border-radius:28px;
+      background:linear-gradient(180deg, rgba(15,23,38,.96), rgba(10,17,31,.98));
+      box-shadow:0 30px 65px rgba(0,0,0,.34);
+    }
+    .device:before{
+      content:""; position:absolute; left:0; right:0; top:0; height:1px;
+      background:linear-gradient(90deg, transparent, rgba(212,175,55,.42), transparent);
+    }
+    .device-top{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.05);
+      background:rgba(255,255,255,.01);
+    }
+    .dots{display:flex; gap:7px}
+    .dot{width:9px; height:9px; border-radius:50%; background:#26324a}
+    .device-body{padding:16px}
+    .mini-kpis{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .mini-card{
+      background:rgba(255,255,255,.02);
+      border:1px solid var(--line);
+      border-radius:18px; padding:14px;
+    }
+    .mini-card .t{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em}
+    .mini-card .v{margin-top:7px; font-size:24px; font-weight:800}
+    .chart{
+      margin-top:12px; height:180px; border-radius:18px;
+      border:1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)),
+        linear-gradient(transparent 24%, rgba(255,255,255,.05) 25%, transparent 26%, transparent 49%, rgba(255,255,255,.05) 50%, transparent 51%, transparent 74%, rgba(255,255,255,.05) 75%, transparent 76%);
+      position:relative; overflow:hidden;
+    }
+    .chart svg{position:absolute; inset:0}
+
+    .section{padding:30px 0}
+    .section-head{display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:18px}
+    .section h2{margin:0; font-size:36px; letter-spacing:-.03em}
+    .section-sub{max-width:62ch; color:var(--muted); line-height:1.6}
+
+    .grid-3{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px}
+    .feature{
+      background:linear-gradient(180deg, rgba(15,23,38,.96), rgba(10,17,31,.98));
+      border:1px solid var(--line);
+      border-radius:22px; padding:20px;
+      box-shadow:0 16px 32px rgba(0,0,0,.18);
+    }
+    .feature-icon{
+      width:42px; height:42px; border-radius:14px;
+      display:grid; place-items:center; margin-bottom:12px;
+      background:linear-gradient(180deg, rgba(212,175,55,.18), rgba(212,175,55,.05));
+      border:1px solid rgba(212,175,55,.22);
+      color:var(--gold); font-weight:900;
+    }
+    .feature h3{margin:0 0 8px; font-size:18px}
+    .feature p{margin:0; color:var(--muted); line-height:1.6}
+
+    .showcase{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+    .panel{
+      background:linear-gradient(180deg, rgba(15,23,38,.96), rgba(10,17,31,.98));
+      border:1px solid var(--line);
+      border-radius:22px; padding:18px;
+    }
+    .panel h3{margin:0 0 10px}
+    .list{display:grid; gap:10px}
+    .list-item{
+      display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start;
+      color:var(--muted); line-height:1.55;
+    }
+    .check{
+      width:24px; height:24px; border-radius:999px;
+      display:grid; place-items:center;
+      background:rgba(34,197,94,.12);
+      color:#96f0b5;
+      border:1px solid rgba(34,197,94,.2);
+      font-size:12px; font-weight:900;
+    }
+
+    .pricing-wrap{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start}
+    .pricing{
+      border:1px solid rgba(212,175,55,.24);
+      background:linear-gradient(180deg, rgba(23,33,53,.96), rgba(12,20,35,.98));
+      border-radius:26px; padding:24px;
+      box-shadow:0 20px 44px rgba(0,0,0,.24);
+    }
+    .tag{
+      display:inline-flex; padding:7px 10px; border-radius:999px;
+      background:rgba(212,175,55,.12); color:#f2d981;
+      border:1px solid rgba(212,175,55,.2);
+      font-size:12px; font-weight:800; margin-bottom:14px;
+    }
+    .price{font-size:54px; font-weight:900; letter-spacing:-.05em}
+    .price small{font-size:18px; color:var(--muted); font-weight:700}
+    .pricing ul{margin:18px 0 0; padding-left:18px; color:var(--muted); line-height:1.85}
+    .pricing li{margin:2px 0}
+
+    .faq{display:grid; gap:12px}
+    .faq-item{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      border-radius:18px; padding:16px;
+    }
+    .faq-item h4{margin:0 0 8px; font-size:16px}
+    .faq-item p{margin:0; color:var(--muted); line-height:1.6}
+
+    .cta-banner{
+      margin:26px 0 40px; padding:26px; border-radius:28px;
+      background:
+        radial-gradient(500px 180px at 0% 0%, rgba(212,175,55,.16), transparent 44%),
+        linear-gradient(180deg, rgba(18,28,47,.96), rgba(10,17,31,.98));
+      border:1px solid rgba(212,175,55,.22);
+      display:grid; grid-template-columns:1.1fr .9fr; gap:20px; align-items:center;
+    }
+    .cta-banner h2{margin:0 0 10px; font-size:36px}
+    .cta-banner p{margin:0; color:var(--muted); line-height:1.6}
+
+    footer{padding:0 0 34px; color:var(--muted); font-size:14px}
+    .footer-row{
+      display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+      padding-top:18px; border-top:1px solid rgba(255,255,255,.06);
+    }
+
+    @media (max-width: 980px){
+      .hero-grid,.showcase,.pricing-wrap,.cta-banner{grid-template-columns:1fr}
+      h1{font-size:46px}
+      .grid-3{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 640px){
+      .nav-links{display:none}
+      .grid-3{grid-template-columns:1fr}
+      .mini-kpis{grid-template-columns:1fr 1fr}
+      .section h2{font-size:30px}
+      .cta-banner h2{font-size:30px}
+      .price{font-size:44px}
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="brand-mark">E</div>
+        <div>Edge Trading Journal</div>
+      </div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <a class="nav-cta" href="#pricing">Start Now</a>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="eyebrow">Professional trading journal for serious traders</div>
+        <h1>Find your edge. Track it. Scale it.</h1>
+        <p>
+          Edge Trading Journal helps traders review performance with clean analytics, trade breakdowns,
+          screenshots, charts, and cloud sync — all inside one professional, mobile-first experience.
+        </p>
+        <div class="cta-row">
+          <a class="btn primary" href="#pricing">Start with Edge</a>
+          <a class="btn" href="#features">See Features</a>
+        </div>
+        <div class="hero-points">
+          <div class="pill">Locked risk sizing</div>
+          <div class="pill">Cloud synced</div>
+          <div class="pill">Advanced analytics</div>
+          <div class="pill">Screenshot review</div>
+        </div>
+      </div>
+
+      <div class="device">
+        <div class="device-top">
+          <div style="font-weight:800">Edge Dashboard</div>
+          <div class="dots">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+        </div>
+        <div class="device-body">
+          <div class="mini-kpis">
+            <div class="mini-card"><div class="t">Balance</div><div class="v">$12,842</div></div>
+            <div class="mini-card"><div class="t">Win Rate</div><div class="v">61.4%</div></div>
+            <div class="mini-card"><div class="t">Profit Factor</div><div class="v">1.88</div></div>
+            <div class="mini-card"><div class="t">Max DD</div><div class="v">$384</div></div>
+          </div>
+          <div class="chart">
+            <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+              <polyline points="0,33 10,31 18,27 28,29 38,20 48,17 60,21 70,16 82,10 100,6"
+                        fill="none" stroke="#d4af37" stroke-width="1.8"/>
+              <polyline points="0,36 10,35 18,34 28,35 38,33 48,29 60,28 70,25 82,20 100,17"
+                        fill="none" stroke="rgba(239,68,68,.8)" stroke-width="1.2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Built for traders who actually review their trades</h2>
+          <div class="section-sub">
+            Edge Trading Journal combines clean UI with the kind of performance data traders usually have to build manually.
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="feature">
+          <div class="feature-icon">01</div>
+          <h3>Advanced trade logging</h3>
+          <p>Track entry, stop, exit, risk, RR plan, notes, screenshots, session, and direction in one clean workflow.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">02</div>
+          <h3>Performance analytics</h3>
+          <p>See win rate, expectancy, profit factor, drawdown, streaks, average win, average loss, and more at a glance.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">03</div>
+          <h3>Cloud synced accounts</h3>
+          <p>Sign in from any device and keep your trades, screenshots, and journal data tied to your own account.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">04</div>
+          <h3>Visual review system</h3>
+          <p>Use screenshot journaling and per-trade breakdowns to see exactly what happened and where your edge is strongest.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">05</div>
+          <h3>Mobile-first design</h3>
+          <p>Review and log trades comfortably on your phone with a premium layout inspired by professional charting platforms.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">06</div>
+          <h3>Built for consistency</h3>
+          <p>Edge is not just for collecting trades — it is designed to help you improve decision-making over time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="analytics" class="section">
+    <div class="container showcase">
+      <div class="panel">
+        <h3>What you can measure</h3>
+        <div class="list">
+          <div class="list-item"><div class="check">✓</div><div>Win rate, average trade, average win, average loss, best and worst trade.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Profit factor, expectancy, average R multiple, and average RR plan.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Max drawdown in dollars and percentage, plus win and loss streak tracking.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Session analysis for Asia, London, and New York to uncover your real edge.</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Why traders use it</h3>
+        <div class="list">
+          <div class="list-item"><div class="check">✓</div><div>Spot patterns faster by combining numbers, notes, and screenshots in one place.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>See whether your edge comes from a specific session, direction, or setup style.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Clean up emotional trading by reviewing hard data instead of relying on memory.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Trade with more consistency because your review process stays sharp and structured.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container pricing-wrap">
+      <div class="pricing">
+        <div class="tag">Launch plan</div>
+        <h2 style="margin:0 0 10px">Simple pricing. Serious value.</h2>
+        <div class="price">£19<small>/month</small></div>
+        <ul>
+          <li>Full cloud-synced trading journal</li>
+          <li>Advanced analytics dashboard</li>
+          <li>Trade screenshots and notes</li>
+          <li>Per-trade breakdown review</li>
+          <li>Mobile-first premium UI</li>
+          <li>Login and personal journal account</li>
+        </ul>
+        <div style="margin-top:20px">
+          <a class="btn primary" href="https://edgetradingjournal.com">Start Free Trial</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Who this is for</h3>
+        <div class="list">
+          <div class="list-item"><div class="check">✓</div><div>XAUUSD traders who want a focused review system for gold.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Forex traders who need clean analytics without bloated software.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Funded and prop firm traders trying to improve discipline and consistency.</div></div>
+          <div class="list-item"><div class="check">✓</div><div>Serious traders who want a premium mobile journaling experience.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Frequently asked questions</h2>
+          <div class="section-sub">
+            Clear answers for traders thinking about using Edge as their main review system.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq">
+        <div class="faq-item">
+          <h4>Is Edge Trading Journal only for gold traders?</h4>
+          <p>No. It works well for any market, but it is especially strong for traders focused on XAUUSD and session-based review.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Can I use it on my phone?</h4>
+          <p>Yes. The platform is designed with a mobile-first layout so journaling and review feel smooth on smaller screens.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Does my data save to the cloud?</h4>
+          <p>Yes. Your trades, screenshots, and journal state are tied to your own account, so you can access them across devices.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Who is this best for?</h4>
+          <p>It is best for traders who want to review seriously, find their real edge, and improve consistency over time.</p>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <div>
+          <h2>Start journaling like a professional trader</h2>
+          <p>
+            Stop relying on memory. Start reviewing your performance with clear data, structured trade notes,
+            screenshots, and analytics designed to help you improve.
+          </p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-start">
+          <a class="btn primary" href="https://edgetradingjournal.com">Get Started</a>
+          <a class="btn" href="#features">Explore Features</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-row">
+      <div>© Edge Trading Journal</div>
+      <div>Professional trade review for serious traders.</div>
+    </div>
+  </footer>
+</body>
+</html>
