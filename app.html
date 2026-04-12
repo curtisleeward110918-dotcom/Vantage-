@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>XAUUSD Elite Journal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#08101d; --bg2:#0d1527; --panel:#10192d; --panel2:#14203a; --line:#26324a;
+  --gold:#d4af37; --text:#f4f7fb; --muted:#97a6c5; --green:#22c55e; --red:#ef4444;
+  --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif;
+  background:
+    radial-gradient(700px 260px at 8% 0%, rgba(212,175,55,.10), transparent 40%),
+    radial-gradient(640px 220px at 100% 0%, rgba(56,189,248,.08), transparent 34%),
+    linear-gradient(180deg,#08101d 0%,#0b1322 100%);
+}
+.hidden{display:none !important}
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:22px}
+.auth-card{
+  width:min(960px,100%);display:grid;grid-template-columns:1.1fr .9fr;
+  border:1px solid var(--line);border-radius:28px;overflow:hidden;
+  background:linear-gradient(180deg, rgba(15,23,38,.96), rgba(10,17,31,.98));
+  box-shadow:0 24px 48px rgba(0,0,0,.30);
+}
+.auth-left{
+  padding:34px;
+  background:
+    radial-gradient(500px 220px at 10% 0%, rgba(212,175,55,.12), transparent 45%),
+    linear-gradient(180deg, rgba(20,31,52,.92), rgba(12,20,35,.96));
+  border-right:1px solid var(--line);
+}
+.auth-left h1{margin:0;color:var(--gold);font-size:32px;line-height:1.05}
+.auth-left p{margin:12px 0 0;color:var(--muted);max-width:42ch;line-height:1.5}
+.auth-bullets{display:grid;gap:12px;margin-top:24px}
+.auth-bullet{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:16px;padding:14px}
+.auth-bullet strong{display:block;margin-bottom:6px}
+.auth-right{padding:26px}
+.auth-tabs{display:flex;gap:10px;margin-bottom:18px}
+.auth-tab{
+  flex:1;padding:11px 14px;border:1px solid var(--line);
+  background:rgba(255,255,255,.02);color:var(--text);border-radius:14px;font-weight:800;cursor:pointer;
+}
+.auth-tab.active{
+  background:linear-gradient(180deg, rgba(212,175,55,.18), rgba(212,175,55,.08));
+  border-color:rgba(212,175,55,.35);color:#fff6d1;
+}
+.field{margin-bottom:12px}
+.field label{
+  display:block;margin-bottom:7px;color:var(--muted);font-size:11px;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:700
+}
+input,select,button,textarea{
+  width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);
+  background:#0b1322;color:var(--text);font-size:16px;
+}
+textarea{min-height:90px;resize:vertical}
+.btn{
+  background:linear-gradient(180deg,#d4af37 0%,#b8911f 100%);
+  color:#111827;font-weight:800;border:none;cursor:pointer
+}
+.btn.secondary{
+  background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02));
+  color:var(--text);border:1px solid var(--line)
+}
+.note{color:var(--muted);font-size:12px;line-height:1.45}
+.app{min-height:100vh;padding-bottom:96px}
+.header{
+  position:sticky;top:0;z-index:20;padding:18px 16px 14px;
+  background:rgba(8,16,29,.94);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.header h1{margin:0;color:var(--gold);font-size:22px}
+.header p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 14px 10px}
+.user-pill{
+  padding:8px 10px;border:1px solid var(--line);border-radius:999px;
+  background:rgba(255,255,255,.03);color:var(--muted);font-size:12px
+}
+.screen{display:none;padding:14px}
+.screen.active{display:block}
+.card{
+  background:linear-gradient(180deg, rgba(15,23,38,.96), rgba(10,17,31,.98));
+  border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px;
+}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:linear-gradient(180deg, rgba(20,31,52,.92), rgba(12,20,35,.96));border:1px solid var(--line);border-radius:16px;padding:14px}
+.kpi .label{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.kpi .value{margin-top:8px;font-size:26px;font-weight:800}
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;padding:10px;
+  background:rgba(8,16,29,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.06);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+}
+.nav-btn{
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
+  border:1px solid var(--line);color:var(--muted);padding:10px 6px;border-radius:14px;font-size:11px;font-weight:800;cursor:pointer
+}
+.nav-btn.active{
+  background:linear-gradient(180deg, rgba(31,157,255,.18), rgba(31,157,255,.08));
+  color:#a7d9ff;border-color:rgba(31,157,255,.30)
+}
+.trade{background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.015));border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+@media (max-width:820px){
+  .auth-card{grid-template-columns:1fr}
+  .auth-left{border-right:none;border-bottom:1px solid var(--line)}
+}
+</style>
+</head>
+<body>
+<div id="authShell" class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-left">
+      <h1>XAUUSD Elite Journal</h1>
+      <p>Sign in to access your cloud-synced journal, trades, screenshots, and analytics from anywhere.</p>
+      <div class="auth-bullets">
+        <div class="auth-bullet"><strong>Cloud Sync</strong>Your trades and settings save to your account.</div>
+        <div class="auth-bullet"><strong>Secure Access</strong>Email and password sign-in backed by Supabase.</div>
+        <div class="auth-bullet"><strong>Same Premium App</strong>All your dashboard features stay intact.</div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="showLoginBtn" type="button" onclick="setAuthTab('login')">Log In</button>
+        <button class="auth-tab" id="showSignupBtn" type="button" onclick="setAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <div id="loginView">
+        <div class="field">
+          <label>Email</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password">
+        </div>
+        <button class="btn" id="loginBtn" type="button" onclick="logIn()">Log In</button>
+        <p class="note" id="loginMsg" style="margin-top:12px"></p>
+      </div>
+
+      <div id="signupView" class="hidden">
+        <div class="field">
+          <label>Email</label>
+          <input id="signupEmail" type="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="signupPassword" type="password" placeholder="At least 6 characters">
+        </div>
+        <button class="btn" id="signupBtn" type="button" onclick="signUp()">Create Account</button>
+        <p class="note" id="signupMsg" style="margin-top:12px"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="appShell" class="hidden">
+  <div class="app">
+    <div class="header">
+      <h1>XAUUSD Elite Journal</h1>
+      <p>Trading journal with analytics and cloud auth</p>
+    </div>
+
+    <div class="top-actions">
+      <div class="user-pill" id="userEmailPill">Not signed in</div>
+      <button class="btn secondary" id="signOutBtn" type="button" onclick="logOut()" style="width:auto;padding:10px 12px">Log Out</button>
+    </div>
+
+    <section id="dashboard" class="screen active">
+      <div class="card">
+        <div class="kpis">
+          <div class="kpi"><div class="label">Starting Balance</div><div class="value" id="kStart">$0.00</div></div>
+          <div class="kpi"><div class="label">Current Balance</div><div class="value" id="kBalance">$0.00</div></div>
+          <div class="kpi"><div class="label">Trades</div><div class="value" id="kTrades">0</div></div>
+          <div class="kpi"><div class="label">Win Rate</div><div class="value" id="kWinRate">0.0%</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="trade" class="screen">
+      <div class="card">
+        <h2 style="color:var(--gold);margin-top:0">Trade Entry</h2>
+        <div class="field"><label>Date</label><input id="date" type="date"></div>
+        <div class="field"><label>Risk</label><input id="risk" type="number" step="0.01" value="0.00"></div>
+        <div class="field"><label>Session</label>
+          <select id="session">
+            <option value="" selected disabled>Select session</option>
+            <option>Asia</option><option>London</option><option>NewYork</option>
+          </select>
+        </div>
+        <div class="field"><label>Direction</label>
+          <select id="direction">
+            <option value="" selected disabled>Select direction</option>
+            <option>Long</option><option>Short</option>
+          </select>
+        </div>
+        <div class="field"><label>Entry</label><input id="entry" type="number" step="0.01" value=""></div>
+        <div class="field"><label>Stop</label><input id="stop" type="number" step="0.01" value=""></div>
+        <div class="field"><label>Exit</label><input id="exit" type="number" step="0.01" value=""></div>
+        <div class="field"><label>RR Plan</label><input id="rr" type="number" step="0.1" value="0.0"></div>
+        <div class="field"><label>Notes</label><textarea id="notes"></textarea></div>
+      </div>
+    </section>
+
+    <section id="history" class="screen">
+      <div class="card">
+        <h2 style="color:var(--gold);margin-top:0">History</h2>
+        <div id="historyList"></div>
+        <p id="emptyHistory" class="note">No trades yet.</p>
+      </div>
+    </section>
+
+    <section id="settings" class="screen">
+      <div class="card">
+        <h2 style="color:var(--gold);margin-top:0">Settings</h2>
+        <div class="field">
+          <label>Starting Balance</label>
+          <input id="startingBalance" type="number" min="0" step="0.01" value="0.00">
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="dashboard" onclick="showScreen('dashboard', this)">Dashboard</button>
+    <button class="nav-btn" data-screen="trade" onclick="showScreen('trade', this)">Trade</button>
+    <button class="nav-btn" data-screen="history" onclick="showScreen('history', this)">History</button>
+    <button class="nav-btn" data-screen="settings" onclick="showScreen('settings', this)">Settings</button>
+  </nav>
+</div>
+
+<script>
+const SUPABASE_URL = "https://blwxtruudppgxyoeixep.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_3DYm_dn56Mr-G0FwkFePhA_fbcj27Kx";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let state = { startingBalance: 0, trades: [] };
+
+const $ = id => document.getElementById(id);
+const money = n => (n < 0 ? "-" : "") + "$" + Math.abs(Number(n || 0)).toFixed(2);
+
+function setAuthTab(tab){
+  $("showLoginBtn").classList.toggle("active", tab === "login");
+  $("showSignupBtn").classList.toggle("active", tab === "signup");
+  $("loginView").classList.toggle("hidden", tab !== "login");
+  $("signupView").classList.toggle("hidden", tab !== "signup");
+}
+function showAuth(){
+  $("authShell").classList.remove("hidden");
+  $("appShell").classList.add("hidden");
+}
+function showApp(){
+  $("authShell").classList.add("hidden");
+  $("appShell").classList.remove("hidden");
+}
+function showScreen(screenId, btn){
+  document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(el => el.classList.remove("active"));
+  $(screenId).classList.add("active");
+  if (btn) btn.classList.add("active");
+}
+function renderStats(){
+  const trades = state.trades || [];
+  const start = Number(state.startingBalance || 0);
+  const pls = trades.map(t => Number(t.pl || 0));
+  const wins = pls.filter(v => v > 0);
+  const net = pls.reduce((a,b)=>a+b,0);
+  const balance = start + net;
+  const winRate = trades.length ? (wins.length / trades.length) * 100 : 0;
+
+  $("kStart").textContent = money(start);
+  $("kBalance").textContent = money(balance);
+  $("kTrades").textContent = String(trades.length);
+  $("kWinRate").textContent = winRate.toFixed(1) + "%";
+
+  $("historyList").innerHTML = trades.map(t => `<div class="trade">${money(t.pl)} - ${t.session || "—"}</div>`).join("");
+  $("emptyHistory").style.display = trades.length ? "none" : "";
+}
+function resetDashboard(){
+  state = { startingBalance: 0, trades: [] };
+  $("userEmailPill").textContent = "Not signed in";
+  $("startingBalance").value = "0.00";
+  $("historyList").innerHTML = "";
+  $("emptyHistory").style.display = "";
+  renderStats();
+}
+async function loadCloudState(userId){
+  try{
+    const { data, error } = await supabaseClient
+      .from("journal_states")
+      .select("app_state")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data && data.app_state){
+      state = data.app_state;
+    } else {
+      state = { startingBalance: 0, trades: [] };
+    }
+  }catch(err){
+    console.warn("Cloud state skipped:", err);
+    state = { startingBalance: 0, trades: [] };
+  }
+}
+async function signUp(){
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+  const msg = $("signupMsg");
+  try{
+    msg.textContent = "Creating account...";
+    const { error } = await supabaseClient.auth.signUp({ email, password });
+    msg.textContent = error ? error.message : "Account created. You can now log in.";
+  }catch(err){
+    msg.textContent = err.message || "Signup failed.";
+  }
+}
+async function logIn(){
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  const msg = $("loginMsg");
+
+  try{
+    msg.textContent = "Signing in...";
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    currentUser = data?.user || data?.session?.user || null;
+    if (!currentUser){
+      const sessionResp = await supabaseClient.auth.getSession();
+      currentUser = sessionResp?.data?.session?.user || null;
+    }
+    if (!currentUser){
+      msg.textContent = "Login succeeded but no session was returned.";
+      return;
+    }
+
+    $("userEmailPill").textContent = currentUser.email || "Signed in";
+    showApp();
+    msg.textContent = "Signed in.";
+
+    await loadCloudState(currentUser.id);
+    $("startingBalance").value = Number(state.startingBalance || 0).toFixed(2);
+    renderStats();
+  }catch(err){
+    console.error(err);
+    msg.textContent = err.message || "Login failed.";
+  }
+}
+async function logOut(){
+  try{
+    await supabaseClient.auth.signOut();
+  }catch(err){
+    console.warn(err);
+  }
+  currentUser = null;
+  resetDashboard();
+  setAuthTab("login");
+  showAuth();
+}
+async function bootApp(){
+  const { data } = await supabaseClient.auth.getSession();
+  if (data.session?.user){
+    currentUser = data.session.user;
+    $("userEmailPill").textContent = currentUser.email || "Signed in";
+    showApp();
+    await loadCloudState(currentUser.id);
+    $("startingBalance").value = Number(state.startingBalance || 0).toFixed(2);
+    renderStats();
+  } else {
+    resetDashboard();
+    showAuth();
+  }
+}
+bootApp();
+</script>
+</body>
+</html>
