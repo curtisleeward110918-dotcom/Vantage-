@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edge Trading Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="screen center-screen">
+    <div class="hero-shell">
+      <section class="hero-copy">
+        <p class="eyebrow">Premium Trading Journal</p>
+        <h1>Edge Trading Journal</h1>
+        <p class="hero-text">
+          Review performance, visualise market movement, and build a cleaner trading process
+          with a premium dashboard feel inspired by pro trading platforms.
+        </p>
+
+        <div class="hero-actions">
+          <button id="enterBtn" class="primary-btn">Enter Dashboard</button>
+          <button id="previewBtn" class="ghost-btn">See Features</button>
+        </div>
+
+        <div class="hero-points">
+          <div class="hero-point">
+            <span class="point-label">Focus</span>
+            <strong>XAUUSD Journaling</strong>
+          </div>
+          <div class="hero-point">
+            <span class="point-label">Style</span>
+            <strong>Premium, dark, responsive</strong>
+          </div>
+          <div class="hero-point">
+            <span class="point-label">Next Phase</span>
+            <strong>Login + cloud sync</strong>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hero-panel">
+        <div class="mini-card">
+          <span class="mini-title">Session Bias</span>
+          <strong id="heroBias">Bullish</strong>
+        </div>
+        <div class="mini-card">
+          <span class="mini-title">Sample Win Rate</span>
+          <strong id="heroWinRate">0%</strong>
+        </div>
+        <div class="mini-card wide">
+          <span class="mini-title">Platform Vision</span>
+          <p>
+            Trading journal, analytics, chart review, and later secure account-based cloud storage.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="dashboard" class="screen hidden">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Dashboard</p>
+        <h2>Edge Trading Journal</h2>
+      </div>
+      <div class="topbar-actions">
+        <button id="refreshBtn" class="ghost-btn">Refresh</button>
+        <button id="backBtn" class="secondary-btn">Back</button>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+      <section class="panel stats-panel">
+        <div class="stat-box">
+          <span class="stat-label">Win Rate</span>
+          <strong id="winRate">0%</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Trades</span>
+          <strong id="tradeCount">0</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Net Move</span>
+          <strong id="netMove">0</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Range</span>
+          <strong id="sessionRange">0</strong>
+        </div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Market Overview</h3>
+            <span class="panel-subtitle">Sample XAUUSD session data</span>
+          </div>
+          <div class="pill">Live-style Preview</div>
+        </div>
+        <canvas id="chart"></canvas>
+      </section>
+
+      <section class="panel summary-panel">
+        <div class="panel-header">
+          <h3>Journal Summary</h3>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span class="summary-label">Best Move</span>
+            <strong id="bestMove">0</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Worst Move</span>
+            <strong id="worstMove">0</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Current Bias</span>
+            <strong id="dashboardBias">Neutral</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">App Status</span>
+            <strong>Stable Front-End</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel notes-panel">
+        <div class="panel-header">
+          <h3>Roadmap</h3>
+        </div>
+        <ul class="roadmap">
+          <li>Premium front-end restored</li>
+          <li>Current chart and stats working from local JSON</li>
+          <li>Next: secure login and cloud storage integration</li>
+          <li>Later: advanced charting and MT5 sync</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
