@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edge Trading Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">E</div>
+        <div>
+          <p class="brand-kicker">Premium Trading Journal</p>
+          <h1>Edge Trading Journal</h1>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="overview">Overview</button>
+        <button class="nav-tab" data-tab="journal">Trade Journal</button>
+        <button class="nav-tab" data-tab="analytics">Analytics</button>
+        <button class="nav-tab" data-tab="charts">Charts</button>
+      </nav>
+
+      <section class="sidebar-card">
+        <p class="section-kicker">Platform Vision</p>
+        <h2>Built for serious trade review</h2>
+        <p>
+          A premium trading workspace for journaling, analytics, market review, and later secure cloud sync.
+        </p>
+      </section>
+
+      <section class="sidebar-card">
+        <p class="section-kicker">Roadmap</p>
+        <ul class="sidebar-list">
+          <li>Luxury dashboard UI</li>
+          <li>Advanced performance analytics</li>
+          <li>Full trade capture fields</li>
+          <li>Next: auth and cloud storage</li>
+        </ul>
+      </section>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div>
+          <p class="section-kicker">XAUUSD Elite Workspace</p>
+          <h2 id="pageTitle">Overview</h2>
+        </div>
+        <div class="topbar-actions">
+          <button class="action-btn ghost">Export</button>
+          <button class="action-btn primary">New Trade</button>
+        </div>
+      </header>
+
+      <section id="overview" class="tab-panel active">
+        <div class="hero-panel">
+          <div class="hero-copy">
+            <p class="section-kicker">Institutional Style Workspace</p>
+            <h3>Review performance inside a premium command centre.</h3>
+            <p class="hero-text">
+              Designed to feel like a high-end trading product: elegant structure, serious analytics,
+              clean journaling workflows, and a foundation ready for secure sign-in and cloud storage later.
+            </p>
+
+            <div class="hero-badges">
+              <span class="badge">TradingView-inspired</span>
+              <span class="badge">Premium dark UI</span>
+              <span class="badge">Journal-ready workflow</span>
+            </div>
+          </div>
+
+          <div class="hero-metrics">
+            <div class="metric-card">
+              <span>Win Rate</span>
+              <strong id="heroWinRate">63%</strong>
+            </div>
+            <div class="metric-card">
+              <span>Profit Factor</span>
+              <strong id="heroProfitFactor">1.84</strong>
+            </div>
+            <div class="metric-card">
+              <span>Expectancy</span>
+              <strong id="heroExpectancy">+0.46R</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-label">Total Trades</span>
+            <strong id="totalTrades">42</strong>
+            <p>Closed trades tracked in this premium sample workspace.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Net P/L</span>
+            <strong id="netPL">+$4,820</strong>
+            <p>Combined result across the current journal sample.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Max Drawdown</span>
+            <strong id="maxDrawdown">-3.9%</strong>
+            <p>Largest pullback across the selected review period.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Average RR</span>
+            <strong id="avgRR">1.72R</strong>
+            <p>Average realised reward-to-risk ratio.</p>
+          </article>
+        </div>
+
+        <div class="content-grid two-left">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Equity Curve</p>
+                <h3>Performance trend</h3>
+              </div>
+              <span class="panel-pill">Sample data</span>
+            </div>
+            <canvas id="equityChart"></canvas>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Session Breakdown</p>
+                <h3>London / New York / Asia</h3>
+              </div>
+            </div>
+            <canvas id="sessionChart"></canvas>
+          </section>
+        </div>
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Recent Trades</p>
+                <h3>Latest journal entries</h3>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Pair</th>
+                    <th>Dir</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>RR</th>
+                    <th>P/L</th>
+                  </tr>
+                </thead>
+                <tbody id="recentTradesTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Execution Notes</p>
+                <h3>Trading workflow reminders</h3>
+              </div>
+            </div>
+            <div class="notes-list">
+              <div class="note-box">
+                <strong>Execution</strong>
+                <p>Only take trades with full confluence and predefined risk.</p>
+              </div>
+              <div class="note-box">
+                <strong>Review</strong>
+                <p>Journal every trade with setup, confirmations, and psychology notes.</p>
+              </div>
+              <div class="note-box">
+                <strong>Focus</strong>
+                <p>Track your best setups and reduce repeated execution mistakes.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="journal" class="tab-panel">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Trade Journal</p>
+              <h3>Capture every trade properly</h3>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label><span>Instrument</span><input value="XAUUSD" /></label>
+            <label><span>Direction</span><select><option>Buy</option><option>Sell</option></select></label>
+            <label><span>Date</span><input type="date" value="2026-04-14" /></label>
+            <label><span>Time</span><input type="time" value="09:30" /></label>
+            <label><span>Session</span><select><option>London</option><option>New York</option><option>Asia</option></select></label>
+            <label><span>Setup Type</span><input value="Breakout Retest" /></label>
+            <label><span>Entry Price</span><input value="2354.2" /></label>
+            <label><span>Stop Loss</span><input value="2348.7" /></label>
+            <label><span>Take Profit</span><input value="2366.8" /></label>
+            <label><span>Exit Price</span><input value="2364.1" /></label>
+            <label><span>Lot Size</span><input value="0.50" /></label>
+            <label><span>Risk Amount</span><input value="$150" /></label>
+            <label><span>Risk to Reward</span><input value="1:1.8" /></label>
+            <label><span>P/L</span><input value="+$270" /></label>
+            <label><span>Result %</span><input value="+1.8%" /></label>
+            <label><span>Status</span><select><option>Closed Win</option><option>Closed Loss</option><option>Open</option></select></label>
+          </div>
+
+          <div class="text-grid">
+            <label><span>Confluences</span><textarea>HTF structure, session liquidity sweep, retest confirmation.</textarea></label>
+            <label><span>Reason for Entry</span><textarea>Entered on confirmation after reclaim with clear invalidation below structure.</textarea></label>
+            <label><span>Mistakes</span><textarea>No major execution mistake. Managed risk correctly.</textarea></label>
+            <label><span>Psychology Notes</span><textarea>Felt patient and disciplined. No early entry impulse.</textarea></label>
+          </div>
+        </div>
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Trade History</p>
+                <h3>Structured journal log</h3>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Session</th>
+                    <th>Setup</th>
+                    <th>Status</th>
+                    <th>RR</th>
+                    <th>P/L</th>
+                  </tr>
+                </thead>
+                <tbody id="journalTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Quick Review</p>
+                <h3>Trade quality checklist</h3>
+              </div>
+            </div>
+            <div class="check-list">
+              <div class="check-item">Structure aligned</div>
+              <div class="check-item">Session context clear</div>
+              <div class="check-item">Risk defined pre-entry</div>
+              <div class="check-item">Entry confirmation present</div>
+              <div class="check-item">Journal completed post-trade</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="analytics" class="tab-panel">
+        <div class="stats-grid analytics-top">
+          <article class="stat-card">
+            <span class="stat-label">Win / Loss</span>
+            <strong>26 / 16</strong>
+            <p>Sample split across the currently loaded history.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Best Trade</span>
+            <strong>+$640</strong>
+            <p>Top-performing trade from the review set.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Worst Trade</span>
+            <strong>-$220</strong>
+            <p>Largest single-trade loss recorded.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Longest Streak</span>
+            <strong>5 Wins</strong>
+            <p>Best sequence inside the loaded sample.</p>
+          </article>
+        </div>
+
+        <div class="content-grid two-left">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Drawdown</p>
+                <h3>Capital pressure view</h3>
+              </div>
+            </div>
+            <canvas id="drawdownChart"></canvas>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Setup Performance</p>
+                <h3>What works best</h3>
+              </div>
+            </div>
+            <canvas id="setupChart"></canvas>
+          </section>
+        </div>
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Expectancy Summary</p>
+                <h3>Decision quality metrics</h3>
+              </div>
+            </div>
+            <div class="metrics-stack">
+              <div class="metrics-row"><span>Expectancy</span><strong>+0.46R</strong></div>
+              <div class="metrics-row"><span>Average Win</span><strong>+$285</strong></div>
+              <div class="metrics-row"><span>Average Loss</span><strong>-$154</strong></div>
+              <div class="metrics-row"><span>Profit Factor</span><strong>1.84</strong></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Session Strength</p>
+                <h3>Performance by session</h3>
+              </div>
+            </div>
+            <div class="session-bars" id="sessionBars"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="charts" class="tab-panel">
+        <div class="content-grid two-left">
+          <section class="panel chart-stage">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Market View</p>
+                <h3>XAUUSD price action preview</h3>
+              </div>
+              <span class="panel-pill">Front-end demo</span>
+            </div>
+            <canvas id="marketChart"></canvas>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Key Statistics</p>
+                <h3>Chart-linked snapshot</h3>
+              </div>
+            </div>
+            <div class="notes-list">
+              <div class="note-box">
+                <strong>Current Bias</strong>
+                <p id="currentBias">Bullish</p>
+              </div>
+              <div class="note-box">
+                <strong>Session Range</strong>
+                <p id="currentRange">18.0</p>
+              </div>
+              <div class="note-box">
+                <strong>Momentum</strong>
+                <p id="currentMomentum">Positive follow-through</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Chart Review Notes</p>
+                <h3>Post-analysis area</h3>
+              </div>
+            </div>
+            <div class="text-grid single">
+              <label><span>Review Notes</span><textarea>Use this section later for screenshot-linked review, HTF bias notes, execution commentary, and lesson capture.</textarea></label>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Performance Graph</p>
+                <h3>Monthly progress</h3>
+              </div>
+            </div>
+            <canvas id="monthlyChart"></canvas>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
