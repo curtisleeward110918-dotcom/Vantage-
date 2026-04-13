@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>XAUUSD Trading Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#08101d;
+  color:#fff;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  color:#d4af37;
+}
+
+.card{
+  background:#10192d;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+input, button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
+}
+
+button{
+  background:#d4af37;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.kpis{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.kpi{
+  background:#14203a;
+  padding:15px;
+  border-radius:10px;
+}
+
+canvas{
+  background:#0b1322;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Trading Dashboard</h1>
+
+  <div class="card">
+    <h3>Add Trade</h3>
+    <input id="entry" placeholder="Entry Price">
+    <input id="exit" placeholder="Exit Price">
+    <input id="risk" placeholder="Risk ($)">
+    <button onclick="addTrade()">Add Trade</button>
+  </div>
+
+  <div class="card kpis">
+    <div class="kpi">Trades: <span id="trades">0</span></div>
+    <div class="kpi">Win Rate: <span id="winrate">0%</span></div>
+    <div class="kpi">Balance: $<span id="balance">0</span></div>
+    <div class="kpi">PnL: $<span id="pnl">0</span></div>
+  </div>
+
+  <div class="card">
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+
+<script>
+let trades = [];
+let balance = 0;
+
+const ctx = document.getElementById('chart').getContext('2d');
+
+let chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Equity',
+      data: [],
+      borderWidth: 2
+    }]
+  }
+});
+
+function addTrade(){
+  let entry = parseFloat(document.getElementById('entry').value);
+  let exit = parseFloat(document.getElementById('exit').value);
+  let risk = parseFloat(document.getElementById('risk').value);
+
+  if(!entry || !exit || !risk) return;
+
+  let pnl = (exit - entry) * risk;
+
+  trades.push(pnl);
+  balance += pnl;
+
+  updateDashboard();
+}
+
+function updateDashboard(){
+  let wins = trades.filter(t => t > 0).length;
+
+  document.getElementById('trades').innerText = trades.length;
+  document.getElementById('winrate').innerText =
+    ((wins / trades.length) * 100).toFixed(1) + "%";
+
+  document.getElementById('balance').innerText = balance.toFixed(2);
+  document.getElementById('pnl').innerText =
+    trades.reduce((a,b)=>a+b,0).toFixed(2);
+
+  chart.data.labels.push(trades.length);
+  chart.data.datasets[0].data.push(balance);
+  chart.update();
+}
+</script>
+
+</body>
+</html>
