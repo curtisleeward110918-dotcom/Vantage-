@@ -1,0 +1,31 @@
+body {
+margin:0;
+font-family:Arial;
+background:#08101d;
+color:white;
+text-align:center;
+}
+
+.center{
+margin-top:100px;
+}
+
+h1{
+font-size:40px;
+}
+
+.sub{
+color:#aaa;
+}
+
+button{
+background:gold;
+border:none;
+padding:12px 24px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.hidden{
+display:none;
+}
