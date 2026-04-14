@@ -5,6 +5,564 @@
   <title>Edge Trading Journal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="./styles.css" />
+
+  <style>
+    :root {
+      --bg-main: linear-gradient(135deg, #0b1530 0%, #132448 45%, #1c3566 100%);
+      --panel-bg: rgba(255, 255, 255, 0.09);
+      --panel-border: rgba(255, 215, 140, 0.25);
+      --panel-soft: rgba(255, 255, 255, 0.06);
+      --text-main: #f7f8fc;
+      --text-soft: #d8e2f2;
+      --text-muted: #aebfd8;
+      --gold: #d9b56d;
+      --gold-strong: #f0cc84;
+      --blue-soft: #8eb7ff;
+      --white-glow: rgba(255, 255, 255, 0.18);
+      --shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background: var(--bg-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb-1 {
+      width: 320px;
+      height: 320px;
+      top: -60px;
+      left: -80px;
+      background: rgba(240, 204, 132, 0.24);
+    }
+
+    .orb-2 {
+      width: 420px;
+      height: 420px;
+      bottom: -120px;
+      right: -100px;
+      background: rgba(142, 183, 255, 0.22);
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(22px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 28px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 6px;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #0f1d3a;
+      background: linear-gradient(135deg, #f7d38e, #c89c49);
+      box-shadow: 0 10px 24px rgba(217, 181, 109, 0.3);
+    }
+
+    .brand-kicker,
+    .section-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.72rem;
+      color: var(--gold-strong);
+      margin: 0 0 6px;
+      font-weight: 700;
+    }
+
+    .brand h1,
+    .sidebar-card h2,
+    .topbar h2,
+    .hero-copy h3,
+    .panel h3 {
+      margin: 0;
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      color: #ffffff;
+    }
+
+    .nav-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-tab {
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-soft);
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .nav-tab:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(240, 204, 132, 0.35);
+      color: #fff;
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, rgba(240, 204, 132, 0.22), rgba(255, 255, 255, 0.12));
+      border-color: rgba(240, 204, 132, 0.5);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .sidebar-card,
+    .panel,
+    .hero-panel,
+    .stat-card,
+    .metric-card,
+    .note-box,
+    .check-item {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+    }
+
+    .sidebar-card p,
+    .sidebar-card li {
+      color: var(--text-soft);
+    }
+
+    .sidebar-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .main-panel {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 8px 4px;
+    }
+
+    .topbar h2 {
+      font-size: 2rem;
+      color: #ffffff;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .action-btn.ghost {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #f0cc84, #cf9f49);
+      color: #112144;
+      box-shadow: 0 10px 24px rgba(217, 181, 109, 0.3);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-panel {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 20px;
+      padding: 24px;
+      border-radius: var(--radius-xl);
+    }
+
+    .hero-text {
+      color: var(--text-soft);
+      max-width: 760px;
+      line-height: 1.7;
+    }
+
+    .hero-badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .badge,
+    .panel-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--gold-strong);
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid rgba(240, 204, 132, 0.28);
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 14px;
+    }
+
+    .metric-card,
+    .stat-card {
+      border-radius: var(--radius-lg);
+      padding: 18px;
+    }
+
+    .metric-card span,
+    .stat-label {
+      display: block;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+    }
+
+    .metric-card strong,
+    .stat-card strong {
+      font-size: 1.55rem;
+      color: #fff;
+    }
+
+    .stat-card p {
+      color: var(--text-soft);
+      margin-bottom: 0;
+      line-height: 1.6;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .content-grid.two-left {
+      grid-template-columns: 1.35fr 0.95fr;
+    }
+
+    .panel {
+      padding: 20px;
+      border-radius: var(--radius-xl);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    th,
+    td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-soft);
+      font-size: 0.94rem;
+    }
+
+    th {
+      color: #fff;
+      font-size: 0.83rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .notes-list,
+    .metrics-stack,
+    .check-list,
+    .session-bars {
+      display: grid;
+      gap: 14px;
+    }
+
+    .note-box,
+    .check-item {
+      padding: 16px;
+      border-radius: 16px;
+      color: var(--text-soft);
+    }
+
+    .note-box strong,
+    .metrics-row strong {
+      color: #fff;
+    }
+
+    .metrics-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      color: var(--text-soft);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .text-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .text-grid.single {
+      grid-template-columns: 1fr;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+    }
+
+    label span {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--gold-strong);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 13px 14px;
+      border-radius: 14px;
+      outline: none;
+      font: inherit;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    canvas {
+      width: 100%;
+      min-height: 260px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .home-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .home-welcome {
+      padding: 26px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(240,204,132,0.1));
+      border: 1px solid rgba(240, 204, 132, 0.24);
+      box-shadow: var(--shadow);
+    }
+
+    .home-welcome p {
+      color: var(--text-soft);
+      line-height: 1.7;
+    }
+
+    .home-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .plan-card {
+      padding: 22px;
+      border-radius: var(--radius-xl);
+    }
+
+    .price {
+      font-size: 2rem;
+      color: #fff;
+      margin: 12px 0 8px;
+      font-weight: 800;
+    }
+
+    .small-muted {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .settings-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .settings-row {
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .settings-row strong {
+      display: block;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 1180px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .stats-grid,
+      .content-grid,
+      .content-grid.two-left,
+      .hero-panel,
+      .home-grid,
+      .form-grid,
+      .text-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-panel {
+        padding: 18px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar h2 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="bg-orb orb-1"></div>
@@ -21,17 +579,20 @@
       </div>
 
       <nav class="nav-tabs">
-        <button class="nav-tab active" data-tab="overview">Overview</button>
+        <button class="nav-tab active" data-tab="home">Home</button>
+        <button class="nav-tab" data-tab="overview">Overview</button>
         <button class="nav-tab" data-tab="journal">Trade Journal</button>
         <button class="nav-tab" data-tab="analytics">Analytics</button>
         <button class="nav-tab" data-tab="charts">Charts</button>
+        <button class="nav-tab" data-tab="settings">Settings</button>
+        <button class="nav-tab" data-tab="subscription">Subscription</button>
       </nav>
 
       <section class="sidebar-card">
         <p class="section-kicker">Platform Vision</p>
         <h2>Built for serious trade review</h2>
         <p>
-          A premium trading workspace for journaling, analytics, market review, and later secure cloud sync.
+          A brighter premium trading workspace for journaling, analytics, market review, and later secure cloud sync.
         </p>
       </section>
 
@@ -41,6 +602,7 @@
           <li>Luxury dashboard UI</li>
           <li>Advanced performance analytics</li>
           <li>Full trade capture fields</li>
+          <li>Settings and premium account flow</li>
           <li>Next: auth and cloud storage</li>
         </ul>
       </section>
@@ -50,7 +612,7 @@
       <header class="topbar">
         <div>
           <p class="section-kicker">XAUUSD Elite Workspace</p>
-          <h2 id="pageTitle">Overview</h2>
+          <h2 id="pageTitle">Home</h2>
         </div>
         <div class="topbar-actions">
           <button class="action-btn ghost">Export</button>
@@ -58,7 +620,70 @@
         </div>
       </header>
 
-      <section id="overview" class="tab-panel active">
+      <section id="home" class="tab-panel active">
+        <div class="home-grid">
+          <section class="home-welcome">
+            <p class="section-kicker">Welcome</p>
+            <h3>Your luxury trading journal command centre</h3>
+            <p>
+              This upgraded home area gives the platform a cleaner starting point, with a brighter and easier-on-the-eye
+              layout while still keeping the premium gold, blue, and white visual direction. It is designed to feel more
+              professional, more polished, and more inviting when the user lands on the application.
+            </p>
+
+            <div class="hero-badges">
+              <span class="badge">Premium Home Screen</span>
+              <span class="badge">Bright Luxury Theme</span>
+              <span class="badge">Professional Workflow</span>
+            </div>
+
+            <div class="home-actions">
+              <button class="action-btn primary">Open Journal</button>
+              <button class="action-btn ghost">View Analytics</button>
+            </div>
+          </section>
+
+          <section class="plan-card panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Workspace Snapshot</p>
+                <h3>At a glance</h3>
+              </div>
+            </div>
+            <div class="metrics-stack">
+              <div class="metrics-row"><span>Current Theme</span><strong>Bright Luxury</strong></div>
+              <div class="metrics-row"><span>Focus Asset</span><strong>XAUUSD</strong></div>
+              <div class="metrics-row"><span>Data Mode</span><strong>Sample Workspace</strong></div>
+              <div class="metrics-row"><span>Next Upgrade</span><strong>Cloud Sync</strong></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="stats-grid" style="margin-top: 18px;">
+          <article class="stat-card">
+            <span class="stat-label">Total Trades</span>
+            <strong>42</strong>
+            <p>Closed trades currently visible inside the journal sample workspace.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Win Rate</span>
+            <strong>63%</strong>
+            <p>A healthy overview of recent performance quality.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Profit Factor</span>
+            <strong>1.84</strong>
+            <p>A premium-level performance metric area for rapid review.</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Expectancy</span>
+            <strong>+0.46R</strong>
+            <p>Quick visibility on decision quality across the loaded trade sample.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="overview" class="tab-panel">
         <div class="hero-panel">
           <div class="hero-copy">
             <p class="section-kicker">Institutional Style Workspace</p>
@@ -70,7 +695,7 @@
 
             <div class="hero-badges">
               <span class="badge">TradingView-inspired</span>
-              <span class="badge">Premium dark UI</span>
+              <span class="badge">Premium bright UI</span>
               <span class="badge">Journal-ready workflow</span>
             </div>
           </div>
@@ -402,9 +1027,101 @@
           </section>
         </div>
       </section>
+
+      <section id="settings" class="tab-panel">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">Settings</p>
+              <h3>Workspace preferences</h3>
+            </div>
+            <span class="panel-pill">New section</span>
+          </div>
+
+          <div class="settings-list">
+            <div class="settings-row">
+              <strong>Theme Preference</strong>
+              <div class="small-muted">Bright luxury styling with gold, blue, and white accents for a softer, more professional appearance.</div>
+            </div>
+            <div class="settings-row">
+              <strong>Default Trading Pair</strong>
+              <div class="small-muted">Set your preferred symbol, such as XAUUSD, for faster journaling and workspace consistency.</div>
+            </div>
+            <div class="settings-row">
+              <strong>Session Defaults</strong>
+              <div class="small-muted">Choose default sessions, risk preferences, chart settings, and dashboard behaviour later in development.</div>
+            </div>
+            <div class="settings-row">
+              <strong>Cloud Sync Options</strong>
+              <div class="small-muted">Prepare this area for future Supabase login, secure data storage, and synced account settings.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="subscription" class="tab-panel">
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Subscription</p>
+                <h3>Premium access</h3>
+              </div>
+              <span class="panel-pill">New section</span>
+            </div>
+
+            <div class="note-box">
+              <strong>Elite Plan</strong>
+              <div class="price">£29/mo</div>
+              <p class="small-muted">
+                Unlock cloud sync, deeper analytics, advanced trade review tools, and future MT5 journal integrations.
+              </p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">Membership Benefits</p>
+                <h3>What premium includes</h3>
+              </div>
+            </div>
+
+            <div class="check-list">
+              <div class="check-item">Secure account login and saved journal history</div>
+              <div class="check-item">Advanced performance analytics and reporting</div>
+              <div class="check-item">Multi-device cloud sync</div>
+              <div class="check-item">Future MT5 trade syncing support</div>
+              <div class="check-item">Expanded chart review and premium dashboard tools</div>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
   </div>
 
   <script src="./app.js"></script>
+
+  <script>
+    const navTabs = document.querySelectorAll(".nav-tab");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+    const pageTitle = document.getElementById("pageTitle");
+
+    navTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.tab;
+
+        navTabs.forEach((btn) => btn.classList.remove("active"));
+        tab.classList.add("active");
+
+        tabPanels.forEach((panel) => panel.classList.remove("active"));
+        const activePanel = document.getElementById(target);
+        if (activePanel) activePanel.classList.add("active");
+
+        const label = tab.textContent.trim();
+        if (pageTitle) pageTitle.textContent = label;
+      });
+    });
+  </script>
 </body>
 </html>
