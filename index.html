@@ -1,260 +1,780 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edge Trading Journal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edge Trading Journal</title>
+  <style>
+    :root{
+      --bg:#101a2b;
+      --bg-2:#16243a;
+      --sidebar:#0d1624;
+      --panel:#1a2a43;
+      --panel-2:#203453;
+      --line:rgba(255,255,255,.10);
+      --line-gold:rgba(212,175,55,.28);
+      --text:#f7f9fd;
+      --muted:#c6d1e2;
+      --soft:#dce5f3;
+      --gold:#d4af37;
+      --gold-2:#efd47a;
+      --green:#59d694;
+      --red:#ff7c7c;
+      --blue:#7ea8ff;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+    }
 
-<style>
-:root{
---bg:#0b1423;
---panel:#13233f;
---panel2:#162949;
---text:#ffffff;
---muted:#aab6cc;
---gold:#d4af37;
-}
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      font-family:Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(212,175,55,.10), transparent 24%),
+        radial-gradient(circle at top right, rgba(126,168,255,.12), transparent 24%),
+        linear-gradient(180deg,#0f1a2a 0%, #15253b 100%);
+    }
 
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(180deg,#0b1423,#10203a);
-color:var(--text);
-}
+    body{overflow-x:hidden}
 
-.app{display:flex;height:100vh}
+    .app-shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:290px 1fr;
+    }
 
-/* SIDEBAR */
-.sidebar{
-width:260px;
-background:#08101d;
-padding:20px;
-}
+    .sidebar{
+      background:rgba(10,18,30,.82);
+      backdrop-filter:blur(10px);
+      border-right:1px solid var(--line);
+      padding:24px 18px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+    }
 
-.logo{
-font-size:22px;
-font-weight:bold;
-margin-bottom:20px;
-}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:24px;
+    }
 
-.nav button{
-display:block;
-width:100%;
-margin-bottom:10px;
-padding:12px;
-background:#13233f;
-border:none;
-color:white;
-cursor:pointer;
-border-radius:8px;
-}
+    .brand-mark{
+      width:56px;
+      height:56px;
+      border-radius:16px;
+      background:linear-gradient(135deg,var(--gold),var(--gold-2));
+      color:#132033;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      font-size:24px;
+      box-shadow:var(--shadow);
+    }
 
-.nav button:hover{background:#1d355d}
+    .brand p{
+      margin:0 0 6px;
+      color:var(--gold-2);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:1.3px;
+      text-transform:uppercase;
+    }
 
-/* MAIN */
-.main{
-flex:1;
-padding:20px;
-overflow:auto;
-}
+    .brand h1{
+      margin:0;
+      font-size:20px;
+      line-height:1.1;
+    }
 
-.section{display:none}
-.section.active{display:block}
+    .nav{
+      display:grid;
+      gap:10px;
+      margin-bottom:20px;
+    }
 
-/* CARDS */
-.card{
-background:var(--panel);
-padding:20px;
-border-radius:10px;
-margin-bottom:20px;
-}
+    .nav button{
+      width:100%;
+      text-align:left;
+      border:none;
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:14px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.06);
+      transition:.18s ease;
+    }
 
-/* FORM */
-input,select,textarea{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border-radius:6px;
-border:none;
-background:#1b2d4f;
-color:white;
-}
+    .nav button:hover,
+    .nav button.active{
+      background:linear-gradient(180deg, rgba(212,175,55,.14), rgba(255,255,255,.05));
+      border-color:var(--line-gold);
+      transform:translateY(-1px);
+    }
 
-/* BUTTON */
-.btn{
-background:var(--gold);
-border:none;
-padding:10px;
-cursor:pointer;
-font-weight:bold;
-}
+    .side-card{
+      background:linear-gradient(180deg,rgba(27,42,67,.95),rgba(22,35,56,.95));
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:var(--shadow);
+    }
 
-/* TABLE */
-table{width:100%;border-collapse:collapse}
-td,th{padding:10px;border-bottom:1px solid #2a3c5e}
+    .side-card .kicker,
+    .kicker{
+      margin:0 0 8px;
+      color:var(--gold-2);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:1.3px;
+      text-transform:uppercase;
+    }
 
-/* CHART BOX */
-.chart{
-height:200px;
-background:#0f1f38;
-border-radius:10px;
-display:flex;
-align-items:center;
-justify-content:center;
-color:#888;
-margin-bottom:20px;
-}
+    .side-card h3{
+      margin:0 0 8px;
+      font-size:18px;
+    }
 
-</style>
+    .side-card p,
+    .side-card li{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .side-card ul{
+      margin:0;
+      padding-left:18px;
+    }
+
+    .main{
+      padding:26px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:22px;
+    }
+
+    .topbar h2{
+      margin:0;
+      font-size:30px;
+    }
+
+    .topbar .sub{
+      margin:0 0 8px;
+      color:var(--gold-2);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:1.3px;
+      text-transform:uppercase;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--gold),var(--gold-2));
+      color:#132033;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .section{display:none}
+    .section.active{display:block}
+
+    .hero{
+      display:grid;
+      grid-template-columns:1.3fr .8fr;
+      gap:18px;
+      margin-bottom:20px;
+    }
+
+    .panel,
+    .metric-card,
+    .stat-card,
+    .note-card{
+      background:linear-gradient(180deg,rgba(26,42,67,.96),rgba(21,35,58,.96));
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .panel{padding:22px}
+    .hero-copy{
+      padding:28px;
+    }
+
+    .hero-copy h3{
+      margin:0 0 12px;
+      font-size:38px;
+      line-height:1.08;
+    }
+
+    .hero-copy p{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:16px;
+      max-width:780px;
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    .badge{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(212,175,55,.10);
+      border:1px solid var(--line-gold);
+      color:var(--soft);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .hero-metrics{
+      display:grid;
+      gap:14px;
+    }
+
+    .metric-card{
+      padding:18px;
+    }
+
+    .metric-card span,
+    .stat-card .label{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:8px;
+    }
+
+    .metric-card strong,
+    .stat-card strong{
+      font-size:28px;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+      margin-bottom:20px;
+    }
+
+    .stat-card{
+      padding:18px;
+    }
+
+    .stat-card p{
+      margin:10px 0 0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1.45fr .85fr;
+      gap:18px;
+      margin-bottom:20px;
+    }
+
+    .grid-2-even{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-bottom:20px;
+    }
+
+    .panel-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .panel-header h3{
+      margin:0;
+      font-size:22px;
+    }
+
+    .panel-header p{
+      margin:0 0 6px;
+      color:var(--gold-2);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:1.3px;
+      text-transform:uppercase;
+    }
+
+    .pill{
+      padding:8px 11px;
+      border-radius:999px;
+      border:1px solid var(--line-gold);
+      background:rgba(212,175,55,.08);
+      color:var(--soft);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    canvas{
+      width:100%;
+      height:320px;
+      display:block;
+      border-radius:18px;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(180deg,#1a2a44 0%, #17263d 100%);
+      background-size:100% 60px, 84px 100%, auto;
+      border:1px solid rgba(255,255,255,.05);
+    }
+
+    #equityChart,#marketChart{height:380px}
+
+    .table-wrap{overflow:auto}
+    table{
+      width:100%;
+      border-collapse:collapse;
+    }
+    th,td{
+      text-align:left;
+      padding:14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      font-size:14px;
+    }
+    th{
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .notes-list,
+    .metrics-stack,
+    .check-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .note-card{
+      padding:16px;
+    }
+
+    .note-card strong{
+      display:block;
+      margin-bottom:6px;
+    }
+
+    .note-card p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.65;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .text-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    label span{
+      display:block;
+      color:var(--soft);
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    input,select,textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:14px;
+      background:#223756;
+      color:var(--text);
+      padding:14px 14px;
+      border:1px solid rgba(255,255,255,.08);
+      font:inherit;
+    }
+
+    input::placeholder, textarea::placeholder{color:#cfdaea}
+
+    textarea{
+      min-height:130px;
+      resize:vertical;
+    }
+
+    input:focus,select:focus,textarea:focus{
+      border-color:rgba(212,175,55,.38);
+      box-shadow:0 0 0 3px rgba(212,175,55,.08);
+    }
+
+    .check-item,
+    .metrics-row{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px;
+      padding:14px 16px;
+    }
+
+    .metrics-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .metrics-row span{
+      color:var(--muted);
+    }
+
+    .session-bars{
+      display:grid;
+      gap:14px;
+    }
+
+    .bar-row{
+      display:grid;
+      gap:6px;
+    }
+
+    .bar-row span{
+      color:var(--soft);
+      font-size:14px;
+    }
+
+    .bar-track{
+      height:12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+
+    .bar-fill{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--gold),var(--gold-2));
+    }
+
+    .subscription-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .plan{
+      padding:22px;
+      border-radius:22px;
+      background:linear-gradient(180deg,rgba(26,42,67,.96),rgba(21,35,58,.96));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .plan.featured{
+      border-color:var(--line-gold);
+      transform:translateY(-2px);
+    }
+
+    .plan h3{
+      margin:0 0 8px;
+      font-size:24px;
+    }
+
+    .plan .price{
+      font-size:34px;
+      font-weight:800;
+      margin:10px 0 16px;
+      color:var(--gold-2);
+    }
+
+    .plan ul{
+      margin:0 0 20px;
+      padding-left:18px;
+      color:var(--muted);
+      line-height:1.8;
+    }
+
+    .signin-wrap{
+      max-width:520px;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    @media (max-width:1200px){
+      .hero,
+      .grid-2,
+      .grid-2-even,
+      .text-grid{
+        grid-template-columns:1fr;
+      }
+      .stats-grid,
+      .form-grid,
+      .subscription-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media (max-width:920px){
+      .app-shell{
+        grid-template-columns:1fr;
+      }
+      .sidebar{
+        position:relative;
+        height:auto;
+        border-right:none;
+        border-bottom:1px solid var(--line);
+      }
+    }
+
+    @media (max-width:680px){
+      .main,.sidebar{
+        padding:16px;
+      }
+      .stats-grid,
+      .form-grid,
+      .subscription-grid{
+        grid-template-columns:1fr;
+      }
+      .topbar,
+      .panel-header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .hero-copy h3{
+        font-size:30px;
+      }
+      .topbar h2{
+        font-size:24px;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">E</div>
+        <div>
+          <p>Premium Trading Journal</p>
+          <h1>Edge Trading Journal</h1>
+        </div>
+      </div>
 
-<div class="app">
+      <div class="nav">
+        <button class="nav-tab active" data-tab="home">Home</button>
+        <button class="nav-tab" data-tab="overview">Overview</button>
+        <button class="nav-tab" data-tab="journal">Trade Journal</button>
+        <button class="nav-tab" data-tab="analytics">Analytics</button>
+        <button class="nav-tab" data-tab="charts">Charts</button>
+        <button class="nav-tab" data-tab="signin">Sign In</button>
+        <button class="nav-tab" data-tab="subscription">Subscription</button>
+      </div>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-<div class="logo">Edge Journal</div>
+      <div class="side-card">
+        <p class="kicker">Platform Vision</p>
+        <h3>Built for serious review</h3>
+        <p>A cleaner premium workspace for trade journaling, analytics, chart review, and later full auth and cloud sync.</p>
+      </div>
 
-<div class="nav">
-<button onclick="show('home')">Home</button>
-<button onclick="show('overview')">Overview</button>
-<button onclick="show('journal')">Trade Journal</button>
-<button onclick="show('analytics')">Analytics</button>
-<button onclick="show('charts')">Charts</button>
-<button onclick="show('signin')">Sign In</button>
-<button onclick="show('subscription')">Subscription</button>
-</div>
-</div>
+      <div class="side-card">
+        <p class="kicker">Roadmap</p>
+        <ul>
+          <li>Premium frontend workspace</li>
+          <li>Trade capture and analytics flow</li>
+          <li>Sign in and subscriptions</li>
+          <li>Later: backend and cloud storage</li>
+        </ul>
+      </div>
+    </aside>
 
-<!-- MAIN -->
-<div class="main">
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <p class="sub">XAUUSD Elite Workspace</p>
+          <h2 id="pageTitle">Home</h2>
+        </div>
+        <div class="top-actions">
+          <button class="btn secondary">Export</button>
+          <button class="btn primary">New Trade</button>
+        </div>
+      </div>
 
-<!-- HOME -->
-<div id="home" class="section active">
-<div class="card">
-<h2>Welcome</h2>
-<p>Premium trading journal for tracking performance, analytics, and execution.</p>
-</div>
-</div>
+      <section id="home" class="section active">
+        <div class="hero">
+          <div class="panel hero-copy">
+            <p class="kicker">Landing Page</p>
+            <h3>A premium trading journal built for clarity, review, and growth.</h3>
+            <p>
+              Edge Trading Journal is designed to help traders capture trade data, review execution,
+              analyse performance, and create a more professional journaling process. This version
+              gives you the full front-end structure, with space ready for sign in, subscriptions,
+              and API-powered cloud storage later.
+            </p>
+            <div class="badges">
+              <span class="badge">Journaling</span>
+              <span class="badge">Analytics</span>
+              <span class="badge">Charts & Review</span>
+              <span class="badge">Subscription Ready</span>
+            </div>
+          </div>
 
-<!-- OVERVIEW -->
-<div id="overview" class="section">
-<div class="card">Win Rate: <span id="win">0%</span></div>
-<div class="card">Trades: <span id="trades">0</span></div>
-</div>
+          <div class="hero-metrics">
+            <div class="metric-card">
+              <span>Win Rate</span>
+              <strong id="heroWinRate">63%</strong>
+            </div>
+            <div class="metric-card">
+              <span>Profit Factor</span>
+              <strong>1.84</strong>
+            </div>
+            <div class="metric-card">
+              <span>Expectancy</span>
+              <strong>+0.46R</strong>
+            </div>
+          </div>
+        </div>
 
-<!-- JOURNAL -->
-<div id="journal" class="section">
-<div class="card">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="label">Trade Journal</span>
+            <strong>Detailed Entry Capture</strong>
+            <p>Track instrument, direction, session, entry, stop, target, notes, mistakes, and psychology.</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Analytics</span>
+            <strong>Visual Performance Review</strong>
+            <p>Review drawdown, setup performance, session strength, win rate, and additional charts.</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Charts</span>
+            <strong>Market Review Workspace</strong>
+            <p>Use chart panels and review notes to evaluate execution and price action quality.</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Growth</span>
+            <strong>Built to Expand</strong>
+            <p>This structure is ready for sign in, subscription access, and backend/API integration.</p>
+          </div>
+        </div>
+      </section>
 
-<select id="instrument">
-<option>XAUUSD</option>
-<option>EURUSD</option>
-<option>GBPUSD</option>
-<option>NASDAQ</option>
-<option>SP500</option>
-<option>Gold</option>
-<option>Oil</option>
-</select>
+      <section id="overview" class="section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="label">Total Trades</span>
+            <strong id="totalTrades">42</strong>
+            <p>Closed trades tracked inside this premium sample workspace.</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Net P/L</span>
+            <strong id="netPL">+$4,820</strong>
+            <p>Combined result across the loaded sample.</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Max Drawdown</span>
+            <strong>-3.9%</strong>
+            <p>Largest pullback across the selected period.</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Average RR</span>
+            <strong>1.72R</strong>
+            <p>Average realised reward-to-risk ratio.</p>
+          </div>
+        </div>
 
-<select id="direction">
-<option>Buy</option>
-<option>Sell</option>
-</select>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <p>Equity Curve</p>
+                <h3>Performance trend</h3>
+              </div>
+              <span class="pill">Sample data</span>
+            </div>
+            <canvas id="equityChart"></canvas>
+          </div>
 
-<input id="entry" placeholder="Entry">
-<input id="exit" placeholder="Exit">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <p>Session Breakdown</p>
+                <h3>London / New York / Asia</h3>
+              </div>
+            </div>
+            <canvas id="sessionChart"></canvas>
+          </div>
+        </div>
 
-<button class="btn" onclick="addTrade()">Enter Trade</button>
+        <div class="grid-2-even">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <p>Recent Trades</p>
+                <h3>Latest journal entries</h3>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Pair</th>
+                    <th>Dir</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>RR</th>
+                    <th>P/L</th>
+                  </tr>
+                </thead>
+                <tbody id="recentTradesTable"></tbody>
+              </table>
+            </div>
+          </div>
 
-</div>
-
-<div class="card">
-<table>
-<thead>
-<tr>
-<th>Instrument</th>
-<th>Dir</th>
-<th>P/L</th>
-</tr>
-</thead>
-<tbody id="table"></tbody>
-</table>
-</div>
-</div>
-
-<!-- ANALYTICS -->
-<div id="analytics" class="section">
-<div class="chart">Equity Curve</div>
-<div class="chart">Win/Loss Pie</div>
-<div class="chart">Performance Chart</div>
-</div>
-
-<!-- CHARTS -->
-<div id="charts" class="section">
-<div class="chart">Market Chart</div>
-</div>
-
-<!-- SIGN IN -->
-<div id="signin" class="section">
-<div class="card">
-<h3>Sign In</h3>
-<input placeholder="Email">
-<input placeholder="Password">
-<button class="btn">Login</button>
-</div>
-</div>
-
-<!-- SUBSCRIPTION -->
-<div id="subscription" class="section">
-<div class="card">
-<h3>Plans</h3>
-<p>Basic / Pro / Elite</p>
-<button class="btn">Subscribe</button>
-</div>
-</div>
-
-</div>
-</div>
-
-<script>
-let trades = []
-
-function show(id){
-document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'))
-document.getElementById(id).classList.add('active')
-}
-
-function addTrade(){
-let inst = document.getElementById('instrument').value
-let dir = document.getElementById('direction').value
-let entry = Number(document.getElementById('entry').value)
-let exit = Number(document.getElementById('exit').value)
-
-let pl = exit - entry
-if(dir === "Sell") pl = -pl
-
-trades.push(pl)
-
-update()
-}
-
-function update(){
-let table = document.getElementById('table')
-table.innerHTML = ''
-
-trades.forEach(t=>{
-table.innerHTML += `<tr><td>XAU</td><td>-</td><td>${t}</td></tr>`
-})
-
-document.getElementById('trades').innerText = trades.length
-
-let wins = trades.filter(t=>t>0).length
-let rate = trades.length ? Math.round((wins/trades.length)*100) : 0
-document.getElementById('win').innerText = rate + "%"
-}
-</script>
-
-</body>
-</html>
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <p>Execution Notes</p>
+                <h3>
