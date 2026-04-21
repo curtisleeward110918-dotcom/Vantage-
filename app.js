@@ -19,6 +19,10 @@ let setupData = [];
 let marketPrices = [2328, 2334, 2331, 2340, 2348, 2342, 2351, 2359, 2354, 2362, 2368, 2361];
 let monthlyPerformance = [];
 
+/* ===============================
+   LOCAL STORAGE
+================================= */
+
 function loadTrades() {
   try {
     const saved = localStorage.getItem('edgeJournalTrades');
@@ -35,6 +39,10 @@ function loadTrades() {
 function saveTrades() {
   localStorage.setItem('edgeJournalTrades', JSON.stringify(trades));
 }
+
+/* ===============================
+   FORMATTING + HELPERS
+================================= */
 
 function formatCurrency(value) {
   const sign = value >= 0 ? '+' : '-';
@@ -53,6 +61,30 @@ function sortTradesDesc(items) {
 function getClosedTrades() {
   return trades.filter(t => t.status !== 'Open');
 }
+
+function parseNumber(value) {
+  return Number(String(value || '').replace(/[^0-9.-]/g, '')) || 0;
+}
+
+function parseRRValue(value) {
+  const raw = String(value || '').trim();
+  if (raw.includes(':')) {
+    const parts = raw.split(':').map(part => parseNumber(part));
+    if (parts.length === 2 && parts[0] !== 0) {
+      return parts[1] / parts[0];
+    }
+  }
+  return parseNumber(raw);
+}
+
+function deriveStatus(pl, selectedStatus) {
+  if (selectedStatus === 'Open') return 'Open';
+  return pl >= 0 ? 'Closed Win' : 'Closed Loss';
+}
+
+/* ===============================
+   ANALYTICS
+================================= */
 
 function calculateDerivedData() {
   const closedTrades = getClosedTrades();
@@ -99,7 +131,11 @@ function calculateDerivedData() {
   });
 
   const orderedMonths = Object.keys(monthlyTotals).sort();
-  monthlyPerformance = orderedMonths.map(month => ({ label: month.slice(5), value: Number(monthlyTotals[month].toFixed(2)), month }));
+  monthlyPerformance = orderedMonths.map(month => ({
+    label: month.slice(5),
+    value: Number(monthlyTotals[month].toFixed(2)),
+    month
+  }));
 
   if (sortedAsc.length) {
     marketPrices = sortedAsc.map(t => Number(t.exit || t.entry || 0)).filter(Boolean);
@@ -130,7 +166,7 @@ function populateTables() {
       <td>${t.date}</td>
       <td>${t.session}</td>
       <td>${t.setup}</td>
-      <td>${t.status.replace('Closed ', '')}</td>
+      <td>${String(t.status || '').replace('Closed ', '')}</td>
       <td>${formatRR(Number(t.rr || 0))}</td>
       <td>${formatCurrency(Number(t.pl || 0))}</td>
     </tr>
@@ -203,39 +239,410 @@ function updateMetrics() {
   setText('profitFactorMetric', profitFactor ? profitFactor.toFixed(2) : '0.00');
 }
 
-function parseNumber(value) {
-  return Number(String(value || '').replace(/[^0-9.-]/g, '')) || 0;
+/* ===============================
+   CHARTS
+================================= */
+
+function setupCanvas(canvasId, height = 320) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
+  const ratio = window.devicePixelRatio || 1;
+  const width = Math.max(canvas.clientWidth, 300);
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return { canvas, ctx, width, height };
 }
 
-function parseRRValue(value) {
-  const raw = String(value || '').trim();
-  if (raw.includes(':')) {
-    const parts = raw.split(':').map(part => parseNumber(part));
-    if (parts.length === 2 && parts[0] !== 0) {
-      return parts[1] / parts[0];
-    }
+function drawGrid(ctx, width, height, pad) {
+  ctx.clearRect(0, 0, width, height);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+
+  for (let i = 0; i < 5; i++) {
+    const y = pad + ((height - pad * 2) / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(width - pad, y);
+    ctx.stroke();
   }
-  return parseNumber(raw);
+
+  for (let i = 0; i < 6; i++) {
+    const x = pad + ((width - pad * 2) / 5) * i;
+    ctx.beginPath();
+    ctx.moveTo(x, pad);
+    ctx.lineTo(x, height - pad);
+    ctx.stroke();
+  }
 }
 
-function deriveStatus(pl, selectedStatus) {
-  if (selectedStatus === 'Open') return 'Open';
-  return pl >= 0 ? 'Closed Win' : 'Closed Loss';
+function drawLineChart(canvasId, data, options = {}) {
+  const setup = setupCanvas(canvasId, options.height || 320);
+  if (!setup || !data.length) return;
+
+  const { ctx, width, height } = setup;
+  const pad = 26;
+  drawGrid(ctx, width, height, pad);
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = Math.max(max - min, 1);
+  const stepX = (width - pad * 2) / Math.max(data.length - 1, 1);
+
+  ctx.beginPath();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = options.color || '#d9b56d';
+
+  data.forEach((value, index) => {
+    const x = pad + index * stepX;
+    const y = pad + (1 - ((value - min) / range)) * (height - pad * 2);
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+
+  ctx.stroke();
+
+  data.forEach((value, index) => {
+    const x = pad + index * stepX;
+    const y = pad + (1 - ((value - min) / range)) * (height - pad * 2);
+    ctx.beginPath();
+    ctx.fillStyle = options.point || '#f0cc84';
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
 }
+
+function roundRect(ctx, x, y, width, height, radius, fill) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+  if (fill) ctx.fill();
+}
+
+function drawBarChart(canvasId, items, options = {}) {
+  const setup = setupCanvas(canvasId, options.height || 320);
+  if (!setup || !items.length) return;
+
+  const { ctx, width, height } = setup;
+  const pad = 24;
+  drawGrid(ctx, width, height, pad);
+
+  const max = Math.max(...items.map(i => Math.abs(i.value)), 1);
+  const barWidth = (width - pad * 2) / items.length * 0.58;
+
+  items.forEach((item, index) => {
+    const xStep = (width - pad * 2) / items.length;
+    const x = pad + index * xStep + (xStep - barWidth) / 2;
+    const barHeight = (Math.abs(item.value) / max) * (height - pad * 2 - 24);
+    const y = height - pad - barHeight;
+
+    ctx.fillStyle = item.value >= 0 ? (options.color || '#d9b56d') : (options.negativeColor || '#8eb7ff');
+    roundRect(ctx, x, y, barWidth, barHeight, 10, true);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.font = '12px Arial';
+    ctx.fillText(item.label, x, height - 8);
+  });
+}
+
+function drawMonthlyBars(canvasId, items) {
+  const series = items.length
+    ? items.map(item => ({ label: item.label, value: item.value }))
+    : [{ label: 'M1', value: 0 }];
+  drawBarChart(canvasId, series, { color: '#f0cc84', negativeColor: '#8eb7ff', height: 320 });
+}
+
+function updateChartStats() {
+  const bias = marketPrices.length && marketPrices[marketPrices.length - 1] >= marketPrices[0] ? 'Bullish' : 'Bearish';
+  const range = marketPrices.length ? (Math.max(...marketPrices) - Math.min(...marketPrices)).toFixed(1) : '0.0';
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  setText('currentBias', bias);
+  setText('currentRange', range);
+  setText('currentMomentum', bias === 'Bullish' ? 'Positive follow-through' : 'Weakening move');
+}
+
+function drawAllCharts() {
+  drawLineChart('equityChart', equityData.length ? equityData : [10000], { color: '#d9b56d', point: '#f0cc84', height: 380 });
+  drawBarChart('sessionChart', sessionData.length ? sessionData : [{ label: 'London', value: 0 }], { color: '#d9b56d', negativeColor: '#8eb7ff', height: 320 });
+  drawLineChart('drawdownChart', drawdownData.length ? drawdownData : [0], { color: '#8eb7ff', point: '#8eb7ff', height: 320 });
+  drawBarChart('setupChart', setupData.length ? setupData : [{ label: 'Retest', value: 0 }], { color: '#f0cc84', negativeColor: '#8eb7ff', height: 320 });
+  drawLineChart('marketChart', marketPrices.length ? marketPrices : [0], { color: '#d9b56d', point: '#f0cc84', height: 380 });
+  drawMonthlyBars('monthlyChart', monthlyPerformance);
+  updateChartStats();
+}
+
+function renderDashboard() {
+  calculateDerivedData();
+  populateTables();
+  populateSessionBars();
+  updateMetrics();
+  drawAllCharts();
+}
+
+/* ===============================
+   NAVIGATION
+================================= */
 
 function switchTab(target) {
   tabs.forEach(b => b.classList.remove('active'));
   panels.forEach(panel => panel.classList.remove('active'));
+
   const activeTab = document.querySelector(`.nav-tab[data-tab="${target}"]`);
   const targetPanel = document.getElementById(target);
+
   if (activeTab) activeTab.classList.add('active');
   if (targetPanel) targetPanel.classList.add('active');
   if (pageTitle && activeTab) pageTitle.textContent = activeTab.textContent;
+
   requestAnimationFrame(drawAllCharts);
 }
 
-function handleTradeSubmit(event) {
+/* ===============================
+   SUPABASE AUTH + CLOUD SAVE
+================================= */
+
+const SUPABASE_URL = 'https://wvptlyyxygoyipwbtzmp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18';
+
+const sbClient = typeof supabase !== 'undefined'
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+
+function setAuthFeedback(message, isError = false) {
+  const el = document.getElementById('authFeedback');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = isError ? '#ffd3d3' : '';
+}
+
+async function getCurrentUser() {
+  if (!sbClient) return null;
+  const { data, error } = await sbClient.auth.getUser();
+  if (error) {
+    console.error('getUser failed', error);
+    return null;
+  }
+  return data?.user || null;
+}
+
+function mapTradeToDb(trade, userId) {
+  return {
+    user_id: userId,
+    trade_date: trade.date,
+    trade_time: trade.time || null,
+    pair: trade.pair || null,
+    direction: trade.dir || null,
+    entry_price: trade.entry ?? null,
+    stop_loss: trade.stopLoss ?? null,
+    take_profit: trade.takeProfit ?? null,
+    exit_price: trade.exit ?? null,
+    lot_size: trade.lotSize ?? null,
+    risk_amount: trade.riskAmount ?? null,
+    rr: trade.rr ?? null,
+    profit_loss: trade.pl ?? null,
+    result_percent: trade.resultPercent ?? null,
+    session: trade.session || null,
+    setup_type: trade.setup || null,
+    status: trade.status || null,
+    confluences: trade.confluences || null,
+    reason_for_entry: trade.reasonForEntry || null,
+    mistakes: trade.mistakes || null,
+    psychology_notes: trade.psychologyNotes || null
+  };
+}
+
+function mapDbToTrade(row) {
+  return {
+    id: row.id,
+    date: row.trade_date,
+    time: row.trade_time || '',
+    pair: row.pair || 'XAUUSD',
+    dir: row.direction || 'Buy',
+    entry: Number(row.entry_price || 0),
+    stopLoss: Number(row.stop_loss || 0),
+    takeProfit: Number(row.take_profit || 0),
+    exit: Number(row.exit_price || 0),
+    lotSize: Number(row.lot_size || 0),
+    riskAmount: Number(row.risk_amount || 0),
+    rr: Number(row.rr || 0),
+    pl: Number(row.profit_loss || 0),
+    resultPercent: Number(row.result_percent || 0),
+    session: row.session || 'London',
+    setup: row.setup_type || 'Manual',
+    status: row.status || 'Open',
+    confluences: row.confluences || '',
+    reasonForEntry: row.reason_for_entry || '',
+    mistakes: row.mistakes || '',
+    psychologyNotes: row.psychology_notes || ''
+  };
+}
+
+async function loadTradesFromCloud() {
+  const user = await getCurrentUser();
+  if (!user || !sbClient) return false;
+
+  const { data, error } = await sbClient
+    .from('trades')
+    .select('*')
+    .order('trade_date', { ascending: false })
+    .order('trade_time', { ascending: false });
+
+  if (error) {
+    console.error('Cloud load failed', error);
+    setAuthFeedback(`Cloud load failed: ${error.message}`, true);
+    return false;
+  }
+
+  trades = (data || []).map(mapDbToTrade);
+  saveTrades();
+  renderDashboard();
+  return true;
+}
+
+async function saveTradeToCloud(trade) {
+  const user = await getCurrentUser();
+  if (!user || !sbClient) return false;
+
+  const payload = mapTradeToDb(trade, user.id);
+
+  const { data, error } = await sbClient
+    .from('trades')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Cloud save failed', error);
+    setAuthFeedback(`Cloud save failed: ${error.message}`, true);
+    return false;
+  }
+
+  trade.id = data.id;
+  return true;
+}
+
+async function refreshAuthUI() {
+  const loggedOutView = document.getElementById('loggedOutView');
+  const loggedInView = document.getElementById('loggedInView');
+  const userEmail = document.getElementById('userEmail');
+  const cloudStatus = document.getElementById('cloudStatus');
+
+  if (!loggedOutView || !loggedInView) return;
+
+  if (!sbClient) {
+    loggedOutView.style.display = 'block';
+    loggedInView.style.display = 'none';
+    setAuthFeedback('Supabase failed to load. Please refresh the page.', true);
+    return;
+  }
+
+  try {
+    const { data, error } = await sbClient.auth.getSession();
+    if (error) throw error;
+
+    const session = data?.session;
+    if (session?.user) {
+      loggedOutView.style.display = 'none';
+      loggedInView.style.display = 'block';
+      if (userEmail) userEmail.textContent = session.user.email || '-';
+      if (cloudStatus) cloudStatus.textContent = 'Authenticated';
+      setAuthFeedback('Logged in successfully.');
+      await loadTradesFromCloud();
+    } else {
+      loggedOutView.style.display = 'block';
+      loggedInView.style.display = 'none';
+      if (userEmail) userEmail.textContent = '-';
+      if (cloudStatus) cloudStatus.textContent = 'Not connected';
+      setAuthFeedback('Not logged in. Your trades save locally for now.');
+      trades = loadTrades();
+      renderDashboard();
+    }
+  } catch (error) {
+    console.error('Failed to refresh auth UI', error);
+    loggedOutView.style.display = 'block';
+    loggedInView.style.display = 'none';
+    setAuthFeedback(error.message || 'Authentication error.', true);
+  }
+}
+
+async function handleSignUp() {
+  if (!sbClient) return;
+
+  const email = document.getElementById('authEmail')?.value?.trim();
+  const password = document.getElementById('authPassword')?.value || '';
+
+  if (!email || !password) {
+    setAuthFeedback('Enter your email and password first.', true);
+    return;
+  }
+
+  setAuthFeedback('Creating account...');
+
+  try {
+    const { error } = await sbClient.auth.signUp({ email, password });
+    if (error) throw error;
+    setAuthFeedback('Account created. Check your email if confirmation is enabled.');
+    await refreshAuthUI();
+  } catch (error) {
+    console.error('Signup failed', error);
+    setAuthFeedback(error.message || 'Sign up failed.', true);
+  }
+}
+
+async function handleSignIn() {
+  if (!sbClient) return;
+
+  const email = document.getElementById('authEmail')?.value?.trim();
+  const password = document.getElementById('authPassword')?.value || '';
+
+  if (!email || !password) {
+    setAuthFeedback('Enter your email and password first.', true);
+    return;
+  }
+
+  setAuthFeedback('Signing in...');
+
+  try {
+    const { error } = await sbClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    setAuthFeedback('Logged in.');
+    await refreshAuthUI();
+  } catch (error) {
+    console.error('Login failed', error);
+    setAuthFeedback(error.message || 'Log in failed.', true);
+  }
+}
+
+async function handleLogOut() {
+  if (!sbClient) return;
+
+  try {
+    const { error } = await sbClient.auth.signOut();
+    if (error) throw error;
+    setAuthFeedback('Logged out.');
+    await refreshAuthUI();
+  } catch (error) {
+    console.error('Logout failed', error);
+    setAuthFeedback(error.message || 'Log out failed.', true);
+  }
+}
+
+/* ===============================
+   TRADE SUBMIT
+================================= */
+
+async function handleTradeSubmit(event) {
   event.preventDefault();
+
   const form = event.currentTarget;
   const entry = parseNumber(form.entryPrice.value);
   const stop = parseNumber(form.stopLoss.value);
@@ -283,7 +690,14 @@ function handleTradeSubmit(event) {
 
   trades.unshift(trade);
   saveTrades();
-  renderDashboard();
+
+  const user = await getCurrentUser();
+  if (user) {
+    await saveTradeToCloud(trade);
+    await loadTradesFromCloud();
+  } else {
+    renderDashboard();
+  }
 
   if (feedback) {
     feedback.textContent = `Trade added: ${trade.pair} ${trade.dir} on ${trade.date}. Overview, analytics, and charts have been updated.`;
@@ -304,134 +718,9 @@ function handleTradeSubmit(event) {
   switchTab('analytics');
 }
 
-function setupCanvas(canvasId, height = 320) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return null;
-  const ratio = window.devicePixelRatio || 1;
-  const width = Math.max(canvas.clientWidth, 300);
-  canvas.width = width * ratio;
-  canvas.height = height * ratio;
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  return { canvas, ctx, width, height };
-}
-
-function drawGrid(ctx, width, height, pad) {
-  ctx.clearRect(0, 0, width, height);
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 5; i++) {
-    const y = pad + ((height - pad * 2) / 4) * i;
-    ctx.beginPath();
-    ctx.moveTo(pad, y);
-    ctx.lineTo(width - pad, y);
-    ctx.stroke();
-  }
-  for (let i = 0; i < 6; i++) {
-    const x = pad + ((width - pad * 2) / 5) * i;
-    ctx.beginPath();
-    ctx.moveTo(x, pad);
-    ctx.lineTo(x, height - pad);
-    ctx.stroke();
-  }
-}
-
-function drawLineChart(canvasId, data, options = {}) {
-  const setup = setupCanvas(canvasId, options.height || 320);
-  if (!setup || !data.length) return;
-  const { ctx, width, height } = setup;
-  const pad = 26;
-  drawGrid(ctx, width, height, pad);
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = Math.max(max - min, 1);
-  const stepX = (width - pad * 2) / Math.max(data.length - 1, 1);
-
-  ctx.beginPath();
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = options.color || '#d9b56d';
-  data.forEach((value, index) => {
-    const x = pad + index * stepX;
-    const y = pad + (1 - ((value - min) / range)) * (height - pad * 2);
-    if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  data.forEach((value, index) => {
-    const x = pad + index * stepX;
-    const y = pad + (1 - ((value - min) / range)) * (height - pad * 2);
-    ctx.beginPath();
-    ctx.fillStyle = options.point || '#f0cc84';
-    ctx.arc(x, y, 4, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
-
-function roundRect(ctx, x, y, width, height, radius, fill) {
-  const r = Math.min(radius, width / 2, height / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + width, y, x + width, y + height, r);
-  ctx.arcTo(x + width, y + height, x, y + height, r);
-  ctx.arcTo(x, y + height, x, y, r);
-  ctx.arcTo(x, y, x + width, y, r);
-  ctx.closePath();
-  if (fill) ctx.fill();
-}
-
-function drawBarChart(canvasId, items, options = {}) {
-  const setup = setupCanvas(canvasId, options.height || 320);
-  if (!setup || !items.length) return;
-  const { ctx, width, height } = setup;
-  const pad = 24;
-  drawGrid(ctx, width, height, pad);
-  const max = Math.max(...items.map(i => Math.abs(i.value)), 1);
-  const barWidth = (width - pad * 2) / items.length * 0.58;
-
-  items.forEach((item, index) => {
-    const xStep = (width - pad * 2) / items.length;
-    const x = pad + index * xStep + (xStep - barWidth) / 2;
-    const barHeight = (Math.abs(item.value) / max) * (height - pad * 2 - 24);
-    const y = height - pad - barHeight;
-    ctx.fillStyle = item.value >= 0 ? (options.color || '#d9b56d') : (options.negativeColor || '#8eb7ff');
-    roundRect(ctx, x, y, barWidth, barHeight, 10, true);
-    ctx.fillStyle = 'rgba(255,255,255,0.78)';
-    ctx.font = '12px Arial';
-    ctx.fillText(item.label, x, height - 8);
-  });
-}
-
-function drawMonthlyBars(canvasId, items) {
-  const series = items.length ? items.map(item => ({ label: item.label, value: item.value })) : [{ label: 'M1', value: 0 }];
-  drawBarChart(canvasId, series, { color: '#f0cc84', negativeColor: '#8eb7ff', height: 320 });
-}
-
-function updateChartStats() {
-  const bias = marketPrices.length && marketPrices[marketPrices.length - 1] >= marketPrices[0] ? 'Bullish' : 'Bearish';
-  const range = marketPrices.length ? (Math.max(...marketPrices) - Math.min(...marketPrices)).toFixed(1) : '0.0';
-  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  setText('currentBias', bias);
-  setText('currentRange', range);
-  setText('currentMomentum', bias === 'Bullish' ? 'Positive follow-through' : 'Weakening move');
-}
-
-function drawAllCharts() {
-  drawLineChart('equityChart', equityData.length ? equityData : [10000], { color: '#d9b56d', point: '#f0cc84', height: 380 });
-  drawBarChart('sessionChart', sessionData.length ? sessionData : [{ label: 'London', value: 0 }], { color: '#d9b56d', negativeColor: '#8eb7ff', height: 320 });
-  drawLineChart('drawdownChart', drawdownData.length ? drawdownData : [0], { color: '#8eb7ff', point: '#8eb7ff', height: 320 });
-  drawBarChart('setupChart', setupData.length ? setupData : [{ label: 'Retest', value: 0 }], { color: '#f0cc84', negativeColor: '#8eb7ff', height: 320 });
-  drawLineChart('marketChart', marketPrices.length ? marketPrices : [0], { color: '#d9b56d', point: '#f0cc84', height: 380 });
-  drawMonthlyBars('monthlyChart', monthlyPerformance);
-  updateChartStats();
-}
-
-function renderDashboard() {
-  calculateDerivedData();
-  populateTables();
-  populateSessionBars();
-  updateMetrics();
-  drawAllCharts();
-}
+/* ===============================
+   EVENT BINDINGS
+================================= */
 
 tabs.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -455,121 +744,6 @@ if (viewAnalyticsBtn) {
   viewAnalyticsBtn.addEventListener('click', () => switchTab('analytics'));
 }
 
-renderDashboard();
-window.addEventListener('resize', drawAllCharts);
-
-// ===== Supabase Auth Integration =====
-const SUPABASE_URL = 'https://wvptlyyxygoyipwbtzmp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18';
-
-const sbClient = typeof supabase !== 'undefined'
-  ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-  : null;
-
-function setAuthFeedback(message, isError = false) {
-  const el = document.getElementById('authFeedback');
-  if (!el) return;
-  el.textContent = message;
-  el.style.color = isError ? '#ffd3d3' : '';
-}
-
-async function refreshAuthUI() {
-  const loggedOutView = document.getElementById('loggedOutView');
-  const loggedInView = document.getElementById('loggedInView');
-  const userEmail = document.getElementById('userEmail');
-  const cloudStatus = document.getElementById('cloudStatus');
-
-  if (!loggedOutView || !loggedInView) return;
-  if (!sbClient) {
-    loggedOutView.style.display = 'block';
-    loggedInView.style.display = 'none';
-    setAuthFeedback('Supabase failed to load. Please refresh the page.', true);
-    return;
-  }
-
-  try {
-    const { data, error } = await sbClient.auth.getSession();
-    if (error) throw error;
-
-    const session = data?.session;
-    if (session?.user) {
-      loggedOutView.style.display = 'none';
-      loggedInView.style.display = 'block';
-      if (userEmail) userEmail.textContent = session.user.email || '-';
-      if (cloudStatus) cloudStatus.textContent = 'Authenticated';
-      setAuthFeedback('Logged in successfully.');
-    } else {
-      loggedOutView.style.display = 'block';
-      loggedInView.style.display = 'none';
-      if (userEmail) userEmail.textContent = '-';
-      if (cloudStatus) cloudStatus.textContent = 'Not connected';
-      setAuthFeedback('Not logged in. Your trades save locally for now.');
-    }
-  } catch (error) {
-    console.error('Failed to refresh auth UI', error);
-    loggedOutView.style.display = 'block';
-    loggedInView.style.display = 'none';
-    setAuthFeedback(error.message || 'Authentication error.', true);
-  }
-}
-
-async function handleSignUp() {
-  if (!sbClient) return;
-  const email = document.getElementById('authEmail')?.value?.trim();
-  const password = document.getElementById('authPassword')?.value || '';
-
-  if (!email || !password) {
-    setAuthFeedback('Enter your email and password first.', true);
-    return;
-  }
-
-  setAuthFeedback('Creating account...');
-  try {
-    const { error } = await sbClient.auth.signUp({ email, password });
-    if (error) throw error;
-    setAuthFeedback('Account created. Check your email if confirmation is enabled.');
-    await refreshAuthUI();
-  } catch (error) {
-    console.error('Signup failed', error);
-    setAuthFeedback(error.message || 'Sign up failed.', true);
-  }
-}
-
-async function handleSignIn() {
-  if (!sbClient) return;
-  const email = document.getElementById('authEmail')?.value?.trim();
-  const password = document.getElementById('authPassword')?.value || '';
-
-  if (!email || !password) {
-    setAuthFeedback('Enter your email and password first.', true);
-    return;
-  }
-
-  setAuthFeedback('Signing in...');
-  try {
-    const { error } = await sbClient.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    setAuthFeedback('Logged in.');
-    await refreshAuthUI();
-  } catch (error) {
-    console.error('Login failed', error);
-    setAuthFeedback(error.message || 'Log in failed.', true);
-  }
-}
-
-async function handleLogOut() {
-  if (!sbClient) return;
-  try {
-    const { error } = await sbClient.auth.signOut();
-    if (error) throw error;
-    setAuthFeedback('Logged out.');
-    await refreshAuthUI();
-  } catch (error) {
-    console.error('Logout failed', error);
-    setAuthFeedback(error.message || 'Log out failed.', true);
-  }
-}
-
 const signUpBtn = document.getElementById('signUpBtn');
 const signInBtn = document.getElementById('signInBtn');
 const logOutBtn = document.getElementById('logOutBtn');
@@ -584,4 +758,10 @@ if (sbClient) {
   });
 }
 
+/* ===============================
+   STARTUP
+================================= */
+
+renderDashboard();
 refreshAuthUI();
+window.addEventListener('resize', drawAllCharts);
