@@ -4,13 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>XAUUSD Elite Journal</title>
-
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-
 :root{
 --bg:#08111f;
 --panel:#0d1a2b;
@@ -21,19 +18,13 @@
 --green:#37c978;
 --red:#ff6b6b;
 }
-
 body{
 font-family:Arial,Helvetica,sans-serif;
 background:var(--bg);
 color:var(--white);
 padding:20px;
 }
-
-.container{
-max-width:1400px;
-margin:auto;
-}
-
+.container{max-width:1400px;margin:auto}
 .card{
 background:var(--panel);
 border:1px solid rgba(212,175,55,.15);
@@ -41,11 +32,9 @@ border-radius:18px;
 padding:20px;
 margin-bottom:20px;
 }
-
 h1{font-size:34px;margin-bottom:10px}
 h2{font-size:22px;margin-bottom:10px}
-small{color:var(--muted)}
-
+small,p{color:var(--muted)}
 input,select{
 width:100%;
 padding:12px;
@@ -56,7 +45,6 @@ color:white;
 margin-top:6px;
 margin-bottom:14px;
 }
-
 button{
 padding:12px 18px;
 border:none;
@@ -67,77 +55,58 @@ font-weight:bold;
 cursor:pointer;
 margin-right:8px;
 }
-
 button.secondary{
 background:var(--panel2);
 color:white;
 }
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:16px;
-}
-
-.metric{
-background:var(--panel2);
-padding:16px;
-border-radius:14px;
-}
-
-.metric h3{
-font-size:13px;
-color:var(--muted);
-margin-bottom:8px;
-}
-
-.metric p{
-font-size:28px;
-font-weight:bold;
-}
-
 .hidden{display:none}
-
 .tabs{
 display:flex;
 gap:10px;
 flex-wrap:wrap;
 margin-bottom:20px;
 }
-
-.tab{
+.tab{background:var(--panel2);color:white}
+.tab.active{background:var(--gold);color:black}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:16px;
+}
+.metric{
 background:var(--panel2);
+padding:16px;
+border-radius:14px;
+}
+.metric h3{
+font-size:13px;
+color:var(--muted);
+margin-bottom:8px;
+}
+.metric p{
+font-size:28px;
+font-weight:bold;
 color:white;
 }
-
-.tab.active{
-background:var(--gold);
-color:black;
-}
-
 table{
 width:100%;
 border-collapse:collapse;
 margin-top:15px;
 }
-
 th,td{
 padding:12px;
 border-bottom:1px solid rgba(255,255,255,.08);
 text-align:left;
 font-size:14px;
 }
-
 .green{color:var(--green)}
 .red{color:var(--red)}
-
 canvas{
 width:100%;
 background:var(--panel2);
 border-radius:16px;
 margin-top:15px;
 }
-
 @media(max-width:768px){
 h1{font-size:28px}
 }
@@ -147,30 +116,30 @@ h1{font-size:28px}
 <body>
 <div class="container">
 
-<!-- LOGIN -->
+<!-- AUTH -->
 <div id="authBox" class="card">
 <h1>XAUUSD Elite Journal</h1>
-<small>Secure premium trading dashboard</small>
+<small>Premium secure login</small>
 
 <div class="tabs" style="margin-top:20px;">
-<button class="tab active" id="loginTab">Login</button>
-<button class="tab" id="signupTab">Sign Up</button>
+<button id="loginTab" class="tab active">Login</button>
+<button id="signupTab" class="tab">Sign Up</button>
 </div>
 
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="password" placeholder="Password">
 
 <button id="authBtn">Login</button>
-<button class="secondary" id="resetBtn">Reset Password</button>
+<button id="resetBtn" class="secondary">Reset Password</button>
 
-<p id="authMsg" style="margin-top:15px;color:var(--muted)"></p>
+<p id="authMsg" style="margin-top:15px;"></p>
 </div>
 
 <!-- APP -->
 <div id="appBox" class="hidden">
 
 <div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
 <div>
 <h1>XAUUSD Elite Journal</h1>
 <small id="userEmail"></small>
@@ -180,10 +149,10 @@ h1{font-size:28px}
 </div>
 
 <div class="tabs">
-<button class="tab active navTab" data-tab="dashboard">Dashboard</button>
-<button class="tab navTab" data-tab="analytics">Analytics</button>
-<button class="tab navTab" data-tab="journal">Journal</button>
-<button class="tab navTab" data-tab="settings">Settings</button>
+<button class="tab active navTab" data-page="dashboard">Dashboard</button>
+<button class="tab navTab" data-page="analytics">Analytics</button>
+<button class="tab navTab" data-page="journal">Journal</button>
+<button class="tab navTab" data-page="settings">Settings</button>
 </div>
 
 <!-- DASHBOARD -->
@@ -213,7 +182,7 @@ h1{font-size:28px}
 
 <div class="card">
 <h2>Equity Curve</h2>
-<canvas id="chart" height="140"></canvas>
+<canvas id="chart" width="900" height="220"></canvas>
 </div>
 
 </div>
@@ -221,7 +190,7 @@ h1{font-size:28px}
 <!-- ANALYTICS -->
 <div id="analytics" class="page hidden">
 <div class="card">
-<h2>Performance Breakdown</h2>
+<h2>Performance Stats</h2>
 <div id="stats"></div>
 </div>
 </div>
@@ -234,39 +203,41 @@ h1{font-size:28px}
 
 <input type="date" id="date">
 <input type="text" id="symbol" value="XAUUSD">
+
 <select id="direction">
 <option>Long</option>
 <option>Short</option>
 </select>
 
-<input type="number" id="pnl" placeholder="P/L $">
+<input type="number" id="pnl" placeholder="Profit / Loss">
 
 <button id="saveTrade">Save Trade</button>
 </div>
 
 <div class="card">
-<h2>Trades</h2>
+<h2>Trade History</h2>
+
 <table>
 <thead>
 <tr>
 <th>Date</th>
 <th>Pair</th>
-<th>Dir</th>
+<th>Direction</th>
 <th>P/L</th>
 <th></th>
 </tr>
 </thead>
 <tbody id="tradeRows"></tbody>
 </table>
-</div>
 
+</div>
 </div>
 
 <!-- SETTINGS -->
 <div id="settings" class="page hidden">
 <div class="card">
 <h2>Settings</h2>
-<p>Premium Navy / Gold / White Theme Active</p>
+<p>Navy / Gold / White premium styling active.</p>
 </div>
 </div>
 
@@ -275,14 +246,15 @@ h1{font-size:28px}
 
 <script>
 const SUPABASE_URL = "https://wvptlyyxygoyipwbtzmp.supabase.co";
-const SUPABASE_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18";
 
 const supabase = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let mode = "login";
+let mode="login";
 
-const authBox = document.getElementById("authBox");
-const appBox = document.getElementById("appBox");
+const authBox=document.getElementById("authBox");
+const appBox=document.getElementById("appBox");
 
 document.getElementById("loginTab").onclick=()=>{
 mode="login";
@@ -294,7 +266,7 @@ mode="signup";
 document.getElementById("authBtn").innerText="Create Account";
 };
 
-document.getElementById("authBtn").onclick = async()=>{
+document.getElementById("authBtn").onclick=async()=>{
 const email=document.getElementById("email").value;
 const password=document.getElementById("password").value;
 
@@ -308,6 +280,7 @@ res=await supabase.auth.signUp({email,password});
 
 document.getElementById("authMsg").innerText =
 res.error ? res.error.message : "Success";
+
 checkUser();
 };
 
@@ -339,7 +312,7 @@ document.querySelectorAll(".navTab").forEach(x=>x.classList.remove("active"));
 btn.classList.add("active");
 
 document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
-document.getElementById(btn.dataset.tab).classList.remove("hidden");
+document.getElementById(btn.dataset.page).classList.remove("hidden");
 };
 });
 
@@ -358,7 +331,10 @@ loadTrades();
 };
 
 async function loadTrades(){
-const {data}=await supabase.from("trades").select("*").order("date",{ascending:false});
+const {data}=await supabase
+.from("trades")
+.select("*")
+.order("date",{ascending:false});
 
 let rows="";
 let profit=0;
@@ -385,6 +361,7 @@ document.getElementById("totalTrades").innerText=data.length;
 document.getElementById("winRate").innerText=
 data.length?Math.round((wins/data.length)*100)+"%":"0%";
 document.getElementById("pf").innerText="1.8";
+
 document.getElementById("stats").innerHTML=
 "Winning Trades: "+wins+"<br>Total Trades: "+data.length;
 
