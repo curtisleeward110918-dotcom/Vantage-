@@ -1,291 +1,223 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>XAUUSD Elite Journal - Final</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:#07111f;color:#fff;font-family:Inter,Arial,sans-serif}
-body{padding:20px}
-.wrap{max-width:1450px;margin:auto}
-.topbar{
-display:flex;justify-content:space-between;align-items:center;
-padding:24px;border-radius:20px;
-background:#0d1a2b;border:1px solid rgba(212,175,55,.25);
-margin-bottom:20px
-}
-h1{margin:0;font-size:34px;color:#d4af37}
-.sub{color:#b7c2d4;font-size:14px;margin-top:6px}
-.btn{
-height:44px;padding:0 18px;border:0;border-radius:12px;
-background:#d4af37;color:#07111f;font-weight:700;cursor:pointer
-}
-.btn2{
-background:#12233b;color:#fff;border:1px solid rgba(255,255,255,.08)
-}
-.card{
-background:#0d1a2b;border-radius:20px;padding:22px;
-border:1px solid rgba(212,175,55,.16);margin-bottom:18px
-}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-input,select{
-width:100%;height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.08);
-background:#12233b;color:#fff;padding:0 14px;margin-top:8px
-}
-label{display:block;margin-bottom:14px;font-size:13px;color:#b7c2d4}
-.metric{
-padding:18px;border-radius:18px;background:#12233b
-}
-.metric h3{margin:0;font-size:12px;color:#b7c2d4;text-transform:uppercase}
-.metric p{margin:10px 0 0;font-size:28px;font-weight:700}
-.tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.tab{
-padding:12px 18px;border-radius:12px;background:#12233b;
-cursor:pointer;border:1px solid rgba(255,255,255,.08)
-}
-.active{border-color:#d4af37}
-.page{display:none}
-.page.show{display:block}
-table{width:100%;border-collapse:collapse}
-th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px;text-align:left}
-th{color:#b7c2d4}
-.green{color:#34d399}
-.red{color:#fb7185}
-.hidden{display:none}
-canvas{background:#12233b;border-radius:18px;width:100%;padding:10px}
-@media(max-width:900px){
-.grid2,.grid3,.grid4{grid-template-columns:1fr}
-}
-</style>
-</head>
-<body>
-<div class="wrap">
-
-<div class="topbar">
-<div>
-<h1>XAUUSD Elite Journal</h1>
-<div class="sub">Professional trading journal with live dashboard + analytics + cloud sync</div>
-</div>
-<button class="btn btn2 hidden" id="logoutBtn">Logout</button>
-</div>
-
-<!-- LOGIN -->
-<div id="loginBox" class="card">
-<div class="grid2">
-<div>
-<h2>Sign In</h2>
-<label>Email<input id="loginEmail" type="email"></label>
-<label>Password<input id="loginPass" type="password"></label>
-<button class="btn" onclick="login()">Sign In</button>
-</div>
-<div>
-<h2>Create Account</h2>
-<label>Email<input id="regEmail" type="email"></label>
-<label>Password<input id="regPass" type="password"></label>
-<button class="btn" onclick="signup()">Create Account</button>
-</div>
-</div>
-<p id="status"></p>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-
-<div class="tabs">
-<div class="tab active" onclick="tab('dashboard',this)">Dashboard</div>
-<div class="tab" onclick="tab('analytics',this)">Analytics</div>
-<div class="tab" onclick="tab('journal',this)">Journal</div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboard" class="page show">
-<div class="grid4">
-<div class="metric"><h3>Trades</h3><p id="mTrades">0</p></div>
-<div class="metric"><h3>Win Rate</h3><p id="mWin">0%</p></div>
-<div class="metric"><h3>Net P/L</h3><p id="mPnL">$0</p></div>
-<div class="metric"><h3>Profit Factor</h3><p id="mPF">0</p></div>
-</div>
-<div class="card">
-<h2>Equity Curve</h2>
-<canvas id="chart" height="140"></canvas>
-</div>
-</div>
-
-<!-- ANALYTICS -->
-<div id="analytics" class="page">
-<div class="grid3">
-<div class="metric"><h3>Long Trades</h3><p id="aLong">0</p></div>
-<div class="metric"><h3>Short Trades</h3><p id="aShort">0</p></div>
-<div class="metric"><h3>Average Win</h3><p id="aAvg">$0</p></div>
-</div>
-</div>
-
-<!-- JOURNAL -->
-<div id="journal" class="page">
-<div class="card">
-<h2>Add Trade</h2>
-<div class="grid3">
-<label>Date<input id="tDate" type="date"></label>
-<label>Direction
-<select id="tDir">
-<option>Long</option>
-<option>Short</option>
-</select></label>
-<label>Session
-<select id="tSession">
-<option>Asia</option>
-<option>London</option>
-<option>New York</option>
-</select></label>
-<label>Entry<input id="tEntry" type="number"></label>
-<label>Exit<input id="tExit" type="number"></label>
-<label>P/L<input id="tPnL" type="number"></label>
-</div>
-<button class="btn" onclick="saveTrade()">Save Trade</button>
-</div>
-
-<div class="card">
-<h2>Trade History</h2>
-<table>
-<thead>
-<tr>
-<th>Date</th><th>Dir</th><th>Session</th><th>Entry</th><th>Exit</th><th>P/L</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
-</div>
-</div>
-
-</div>
-</div>
+<!-- A1 PATCH PACK — SECTION 1 -->
+<!-- Replace your current Supabase config/auth startup block with this -->
 
 <script>
-const SUPABASE_URL="https://wvptlyyxygoyipwbtzmp.supabase.co";
-const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18";
-const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+(() => {
 
-let user=null;
-let trades=[];
+/* =====================================================
+   HARDCODED SUPABASE (config screen removed)
+===================================================== */
+const SUPABASE_URL = "https://wvptlyyxygoyipwbtzmp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18";
 
-function msg(t){document.getElementById("status").innerText=t}
-
-async function signup(){
-const {error}=await db.auth.signUp({
-email:regEmail.value,password:regPass.value
-});
-msg(error?error.message:"Account created");
-}
-
-async function login(){
-const {error}=await db.auth.signInWithPassword({
-email:loginEmail.value,password:loginPass.value
-});
-if(error){msg(error.message);return;}
-init();
-}
-
-async function init(){
-const r=await db.auth.getUser();
-user=r.data.user;
-if(!user)return;
-loginBox.classList.add("hidden");
-app.classList.remove("hidden");
-logoutBtn.classList.remove("hidden");
-loadTrades();
-}
-
-logoutBtn.onclick=async()=>{
-await db.auth.signOut();
-location.reload();
-}
-
-function tab(id,el){
-document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
-document.getElementById(id).classList.add("show");
-document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-el.classList.add("active");
-}
-
-async function saveTrade(){
-const row={
-user_id:user.id,
-date:tDate.value,
-direction:tDir.value,
-session:tSession.value,
-entry:Number(tEntry.value),
-exit:Number(tExit.value),
-pnl:Number(tPnL.value)
+const state = {
+  supabase: window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  ),
+  user: null,
+  trades: [],
+  filtered: [],
+  filters: {
+    from:"",
+    to:"",
+    session:"all",
+    direction:"all"
+  },
+  tab:"dashboard"
 };
-await db.from("trades").insert(row);
-loadTrades();
+
+const $ = id => document.getElementById(id);
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+const els = {
+  authView:$("authView"),
+  appView:$("appView"),
+  logoutBtn:$("logoutBtn"),
+  userPill:$("userPill"),
+  authStatus:$("authStatus"),
+  signInForm:$("signInForm"),
+  signUpForm:$("signUpForm")
+};
+
+/* =====================================================
+   STATUS UI
+===================================================== */
+function setStatus(msg,type=""){
+  if(!els.authStatus) return;
+  els.authStatus.className="status "+type;
+  els.authStatus.textContent=msg;
 }
 
-async function loadTrades(){
-const {data}=await db.from("trades").select("*").eq("user_id",user.id).order("date",{ascending:false});
-trades=data||[];
-render();
+/* =====================================================
+   SHOW / HIDE APP
+===================================================== */
+function updateAuthUI(){
+  const signed = !!state.user;
+
+  els.authView.classList.toggle("hidden",signed);
+  els.appView.classList.toggle("hidden",!signed);
+  els.logoutBtn.classList.toggle("hidden",!signed);
+
+  if(els.userPill){
+    els.userPill.textContent = signed
+      ? state.user.email
+      : "Sign in to continue";
+  }
 }
 
-function render(){
-tbody.innerHTML=trades.map(t=>`
-<tr>
-<td>${t.date}</td>
-<td>${t.direction}</td>
-<td>${t.session}</td>
-<td>${t.entry}</td>
-<td>${t.exit}</td>
-<td class="${t.pnl>=0?'green':'red'}">$${t.pnl}</td>
-</tr>`).join("");
+/* =====================================================
+   REFRESH SESSION
+===================================================== */
+async function refreshSession(){
+  const { data, error } =
+    await state.supabase.auth.getUser();
 
-const wins=trades.filter(x=>x.pnl>0);
-const loss=trades.filter(x=>x.pnl<0);
+  if(error){
+    setStatus(error.message,"err");
+    return;
+  }
 
-mTrades.innerText=trades.length;
-mWin.innerText=(trades.length?(wins.length/trades.length*100):0).toFixed(1)+"%";
-mPnL.innerText="$"+trades.reduce((a,b)=>a+b.pnl,0).toFixed(2);
+  state.user = data.user || null;
 
-const gp=wins.reduce((a,b)=>a+b.pnl,0);
-const gl=Math.abs(loss.reduce((a,b)=>a+b.pnl,0));
-mPF.innerText=gl?(gp/gl).toFixed(2):gp.toFixed(2);
+  updateAuthUI();
 
-aLong.innerText=trades.filter(x=>x.direction=="Long").length;
-aShort.innerText=trades.filter(x=>x.direction=="Short").length;
-aAvg.innerText="$"+(wins.length?gp/wins.length:0).toFixed(2);
+  if(state.user){
+    setStatus(
+      "Signed in as "+state.user.email,
+      "ok"
+    );
 
-drawChart();
+    if(window.loadTrades) await window.loadTrades();
+    if(window.refreshAll) window.refreshAll();
+
+  }else{
+    setStatus("Ready to sign in.");
+  }
 }
 
-function drawChart(){
-const c=document.getElementById("chart");
-const x=c.getContext("2d");
-x.clearRect(0,0,c.width,c.height);
+/* =====================================================
+   SIGN IN
+===================================================== */
+async function signIn(e){
+  e.preventDefault();
 
-let eq=0;
-let arr=trades.slice().reverse().map(t=>eq+=t.pnl);
-if(!arr.length)return;
+  const fd = new FormData(els.signInForm);
 
-let max=Math.max(...arr,0),min=Math.min(...arr,0);
-let range=max-min||1;
+  const { error } =
+    await state.supabase.auth.signInWithPassword({
+      email: fd.get("email"),
+      password: fd.get("password")
+    });
 
-x.beginPath();
-x.strokeStyle="#d4af37";
-x.lineWidth=3;
+  if(error){
+    setStatus(error.message,"err");
+    return;
+  }
 
-arr.forEach((v,i)=>{
-let px=(i/(arr.length-1||1))*c.width;
-let py=c.height-((v-min)/range)*c.height;
-if(i==0)x.moveTo(px,py);
-else x.lineTo(px,py);
-});
-x.stroke();
+  els.signInForm.reset();
+  await refreshSession();
 }
+
+/* =====================================================
+   SIGN UP
+===================================================== */
+async function signUp(e){
+  e.preventDefault();
+
+  const fd = new FormData(els.signUpForm);
+
+  const { data, error } =
+    await state.supabase.auth.signUp({
+      email: fd.get("email"),
+      password: fd.get("password")
+    });
+
+  if(error){
+    setStatus(error.message,"err");
+    return;
+  }
+
+  els.signUpForm.reset();
+
+  setStatus(
+    data.user && !data.session
+      ? "Account created. Check email."
+      : "Account created and signed in.",
+    "ok"
+  );
+
+  await refreshSession();
+}
+
+/* =====================================================
+   LOG OUT
+===================================================== */
+async function signOut(){
+
+  const { error } =
+    await state.supabase.auth.signOut();
+
+  if(error){
+    setStatus(error.message,"err");
+    return;
+  }
+
+  state.user = null;
+  state.trades = [];
+  state.filtered = [];
+
+  updateAuthUI();
+
+  if(window.seedEmpty) window.seedEmpty();
+
+  setStatus("Signed out.","ok");
+}
+
+/* =====================================================
+   BIND EVENTS
+===================================================== */
+function bindAuth(){
+
+  els.signInForm?.addEventListener(
+    "submit",
+    signIn
+  );
+
+  els.signUpForm?.addEventListener(
+    "submit",
+    signUp
+  );
+
+  els.logoutBtn?.addEventListener(
+    "click",
+    signOut
+  );
+
+  state.supabase.auth.onAuthStateChange(
+    async ()=>{
+      await refreshSession();
+    }
+  );
+}
+
+/* =====================================================
+   INIT
+===================================================== */
+async function init(){
+
+  bindAuth();
+
+  await refreshSession();
+
+}
+
+/* expose state */
+window.state = state;
 
 init();
+
+})();
 </script>
-</body>
-</html>
