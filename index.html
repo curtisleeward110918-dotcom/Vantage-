@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XAUUSD Elite Journal</title>
+  <style>
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #08111f;
+  --panel: #0d1a2b;
+  --panel-2: #102038;
+  --panel-3: #132744;
+  --border: rgba(212, 175, 55, 0.16);
+  --gold: #d4af37;
+  --gold-soft: rgba(212, 175, 55, 0.14);
+  --navy: #93a8c7;
+  --text: #f8fbff;
+  --muted: #b3bfd1;
+  --success: #37c978;
+  --danger: #ff6b6b;
+  --shadow: 0 20px 55px rgba(2, 6, 16, 0.42);
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top right, rgba(212, 175, 55, 0.08), transparent 22%),
+    radial-gradient(circle at bottom left, rgba(143, 163, 191, 0.10), transparent 24%),
+    var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body { padding: 24px; }
+h1, h2, p { margin: 0; }
+
+.app-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.topbar,
+.panel,
+.kpi-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)), var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.topbar,
+.panel,
+.kpi-card { border-radius: 22px; }
+
+.topbar::before,
+.panel::before,
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent);
+  pointer-events: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 26px;
+  gap: 16px;
+}
+
+.eyebrow {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sync-pill {
+  background: var(--gold-soft);
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panel { padding: 22px; }
+
+.tabs-bar {
+  padding: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 0 18px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: transform 0.12s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.tab-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(212, 175, 55, 0.28);
+}
+
+.tab-btn.is-active {
+  border-color: rgba(212, 175, 55, 0.38);
+  background: linear-gradient(180deg, rgba(212,175,55,0.18), rgba(212,175,55,0.08));
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(212,175,55,0.1);
+}
+
+.tab-panel {
+  display: none;
+  gap: 20px;
+}
+
+.tab-panel.is-active {
+  display: grid;
+}
+
+.filter-panel { padding-bottom: 18px; }
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.filter-actions,
+.form-actions,
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.filter-actions { height: 100%; }
+
+label {
+  display: grid;
+  gap: 8px;
+}
+
+label span,
+.panel-head p,
+.footer-note,
+.kpi-sub,
+.settings-message,
+.swatch small {
+  color: var(--muted);
+}
+
+label span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+input, select, button {
+  font: inherit;
+}
+
+input, select {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 0 14px;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+.btn, .file-btn {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: linear-gradient(180deg, rgba(212,175,55,0.18), rgba(212,175,55,0.08));
+  color: var(--text);
+  padding: 0 16px;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover, .file-btn:hover { filter: brightness(1.06); }
+
+.btn-secondary, .file-btn.btn-secondary {
+  background: var(--panel-2);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.danger-soft {
+  border-color: rgba(255,107,107,0.24);
+  color: #ffd5d5;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.kpi-card { padding: 18px; }
+
+.kpi-label {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.kpi-value {
+  font-size: clamp(24px, 2vw, 32px);
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.text-negative,
+.pnl-negative { color: var(--danger); }
+.pnl-positive { color: var(--success); }
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.sub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.lower-grid,
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.55fr;
+  gap: 20px;
+}
+
+.settings-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-list,
+.insight-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-item,
+.insight-item,
+.swatch {
+  background: var(--panel-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-item strong,
+.insight-item strong,
+.swatch strong {
+  color: var(--text);
+}
+
+.trade-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+.table-wrap {
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+  background: var(--panel-2);
+}
+
+th, td {
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.delete-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,107,107,0.18);
+  background: rgba(255,107,107,0.08);
+  color: #ffd2d2;
+  cursor: pointer;
+}
+
+.delete-btn:hover { background: rgba(255,107,107,0.14); }
+
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  padding: 30px;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--panel-2);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 18px;
+}
+
+.settings-card { min-height: 220px; }
+.settings-message { margin-top: 14px; }
+
+.swatch-row {
+  display: grid;
+  gap: 12px;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.swatch-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  flex: 0 0 28px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.swatch-navy { background: linear-gradient(180deg, #102038, #08111f); }
+.swatch-gold { background: #d4af37; }
+.swatch-white { background: #f8fbff; }
+
+.footer-note {
+  text-align: center;
+  font-size: 13px;
+  padding-bottom: 8px;
+}
+
+@media (max-width: 1200px) {
+  .kpi-grid,
+  .sub-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .main-grid,
+  .lower-grid,
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  body { padding: 14px; }
+
+  .filter-grid,
+  .trade-form,
+  .kpi-grid,
+  .sub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    padding: 20px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Premium trading journal</div>
+        <h1>XAUUSD Elite Journal</h1>
+      </div>
+      <div class="topbar-actions">
+        <span class="sync-pill">Standalone HTML version</span>
+        <button id="resetDemoBtn" class="btn btn-secondary" type="button">Restore demo data</button>
+      </div>
+    </header>
+
+    <nav class="tabs-bar panel" aria-label="Primary navigation">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="tab-dashboard" data-tab="dashboard">Dashboard</button>
+        <button class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-analytics" data-tab="analytics">Analytics</button>
+        <button class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-journal" data-tab="journal">Journal</button>
+        <button class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-settings" data-tab="settings">Settings</button>
+      </div>
+    </nav>
+
+    <section id="tab-dashboard" class="tab-panel is-active" role="tabpanel">
+      <section class="panel filter-panel">
+        <div class="filter-grid">
+          <label>
+            <span>From</span>
+            <input id="filterFrom" type="date" />
+          </label>
+          <label>
+            <span>To</span>
+            <input id="filterTo" type="date" />
+          </label>
+          <label>
+            <span>Session</span>
+            <select id="filterSession">
+              <option value="all">All sessions</option>
+            </select>
+          </label>
+          <label>
+            <span>Direction</span>
+            <select id="filterDirection">
+              <option value="all">All directions</option>
+              <option value="Long">Long</option>
+              <option value="Short">Short</option>
+            </select>
+          </label>
+          <div class="filter-actions">
+            <button id="applyFiltersBtn" class="btn" type="button">Apply filters</button>
+            <button id="clearFiltersBtn" class="btn btn-secondary" type="button">Clear</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-grid" id="kpiGrid"></section>
+
+      <section class="main-grid">
+        <div class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Equity curve</h2>
+              <p>Running equity based on filtered trades</p>
+            </div>
+          </div>
+          <canvas id="equityCanvas" width="860" height="320"></canvas>
+        </div>
+
+        <div class="panel summary-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Performance summary</h2>
+              <p>Calculated from the same central trade store</p>
+            </div>
+          </div>
+          <div id="performanceSummary" class="summary-list"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-analytics" class="tab-panel" role="tabpanel" hidden>
+      <section class="sub-grid">
+        <div class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Session P/L</h2>
+              <p>Profit by session</p>
+            </div>
+          </div>
+          <canvas id="sessionCanvas" width="520" height="260"></canvas>
+        </div>
+
+        <div class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Long vs short</h2>
+              <p>Direction comparison</p>
+            </div>
+          </div>
+          <canvas id="directionCanvas" width="520" height="260"></canvas>
+        </div>
+
+        <div class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Win / loss split</h2>
+              <p>Distribution of filtered trades</p>
+            </div>
+          </div>
+          <canvas id="distributionCanvas" width="520" height="260"></canvas>
+        </div>
+      </section>
+
+      <section class="panel insights-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Analytics notes</h2>
+            <p>Quick read on what your filtered data is showing</p>
+          </div>
+        </div>
+        <div id="analyticsInsightGrid" class="insight-grid"></div>
+      </section>
+    </section>
+
+    <section id="tab-journal" class="tab-panel" role="tabpanel" hidden>
+      <section class="lower-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Add trade</h2>
+              <p>Saving a trade updates analytics, charts, and the journal table</p>
+            </div>
+          </div>
+
+          <form id="tradeForm" class="trade-form">
+            <label><span>Date</span><input required name="date" type="date" /></label>
+            <label><span>Symbol</span><input required name="symbol" type="text" value="XAUUSD" /></label>
+            <label><span>Direction</span>
+              <select required name="direction">
+                <option value="Long">Long</option>
+                <option value="Short">Short</option>
+              </select>
+            </label>
+            <label><span>Session</span>
+              <select required name="session">
+                <option value="London">London</option>
+                <option value="New York">New York</option>
+                <option value="Asia">Asia</option>
+              </select>
+            </label>
+            <label><span>Entry</span><input required name="entry" type="number" step="0.01" /></label>
+            <label><span>Exit</span><input required name="exit" type="number" step="0.01" /></label>
+            <label><span>Lot size</span><input required name="lotSize" type="number" step="0.01" min="0.01" /></label>
+            <label><span>Risk ($)</span><input required name="riskAmount" type="number" step="0.01" min="0.01" /></label>
+            <label><span>P/L ($)</span><input required name="pnl" type="number" step="0.01" /></label>
+            <label><span>Notes</span><input name="notes" type="text" placeholder="Setup / note" /></label>
+            <div class="form-actions">
+              <button class="btn" type="submit">Save trade</button>
+              <button id="clearFormBtn" class="btn btn-secondary" type="reset">Clear form</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Recent trades</h2>
+              <p id="tradeCountLabel">0 trades</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Symbol</th>
+                  <th>Dir</th>
+                  <th>Session</th>
+                  <th>Entry</th>
+                  <th>Exit</th>
+                  <th>Lot</th>
+                  <th>Risk</th>
+                  <th>P/L</th>
+                  <th>R</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tradeTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-settings" class="tab-panel" role="tabpanel" hidden>
+      <section class="settings-grid">
+        <div class="panel settings-card">
+          <div class="panel-head">
+            <div>
+              <h2>Storage controls</h2>
+              <p>Manage your local browser data safely</p>
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button id="exportTradesBtn" class="btn" type="button">Export trades JSON</button>
+            <label class="file-btn btn btn-secondary" for="importTradesInput">Import trades JSON</label>
+            <input id="importTradesInput" type="file" accept="application/json" hidden />
+            <button id="clearStorageBtn" class="btn btn-secondary danger-soft" type="button">Clear saved trades</button>
+          </div>
+          <p id="settingsMessage" class="settings-message">Your data is currently stored in this browser.</p>
+        </div>
+
+        <div class="panel settings-card">
+          <div class="panel-head">
+            <div>
+              <h2>Visual style</h2>
+              <p>Current look follows your requested palette</p>
+            </div>
+          </div>
+          <div class="swatch-row">
+            <div class="swatch">
+              <span class="swatch-chip swatch-navy"></span>
+              <strong>Navy</strong>
+              <small>#08111f / #0d1a2b</small>
+            </div>
+            <div class="swatch">
+              <span class="swatch-chip swatch-gold"></span>
+              <strong>Gold</strong>
+              <small>#d4af37</small>
+            </div>
+            <div class="swatch">
+              <span class="swatch-chip swatch-white"></span>
+              <strong>White</strong>
+              <small>#f8fbff</small>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer-note">
+      <span>All analytics, tabs, charts, and journal sections are calculated from the same stored trade dataset.</span>
+    </footer>
+  </div>
+
+  <script>
+window.tradeSeedData = [
+  {
+    id: "t1",
+    date: "2026-04-12",
+    symbol: "XAUUSD",
+    direction: "Long",
+    session: "London",
+    entry: 2298.30,
+    exit: 2305.90,
+    lotSize: 1.20,
+    riskAmount: 120,
+    pnl: 248,
+    notes: "Breakout continuation"
+  },
+  {
+    id: "t2",
+    date: "2026-04-13",
+    symbol: "XAUUSD",
+    direction: "Short",
+    session: "New York",
+    entry: 2311.40,
+    exit: 2314.10,
+    lotSize: 1.00,
+    riskAmount: 150,
+    pnl: -92,
+    notes: "Fade attempt"
+  },
+  {
+    id: "t3",
+    date: "2026-04-14",
+    symbol: "XAUUSD",
+    direction: "Long",
+    session: "London",
+    entry: 2306.70,
+    exit: 2313.80,
+    lotSize: 1.50,
+    riskAmount: 140,
+    pnl: 286,
+    notes: "Trend continuation"
+  },
+  {
+    id: "t4",
+    date: "2026-04-15",
+    symbol: "XAUUSD",
+    direction: "Short",
+    session: "Asia",
+    entry: 2320.10,
+    exit: 2315.40,
+    lotSize: 0.80,
+    riskAmount: 90,
+    pnl: 134,
+    notes: "Range rejection"
+  },
+  {
+    id: "t5",
+    date: "2026-04-15",
+    symbol: "XAUUSD",
+    direction: "Long",
+    session: "New York",
+    entry: 2316.10,
+    exit: 2312.60,
+    lotSize: 1.10,
+    riskAmount: 110,
+    pnl: -108,
+    notes: "Failed reclaim"
+  },
+  {
+    id: "t6",
+    date: "2026-04-16",
+    symbol: "XAUUSD",
+    direction: "Long",
+    session: "London",
+    entry: 2308.80,
+    exit: 2319.20,
+    lotSize: 1.40,
+    riskAmount: 130,
+    pnl: 362,
+    notes: "Momentum push"
+  },
+  {
+    id: "t7",
+    date: "2026-04-17",
+    symbol: "XAUUSD",
+    direction: "Short",
+    session: "New York",
+    entry: 2325.70,
+    exit: 2328.10,
+    lotSize: 0.90,
+    riskAmount: 100,
+    pnl: -76,
+    notes: "Countertrend scalp"
+  },
+  {
+    id: "t8",
+    date: "2026-04-18",
+    symbol: "XAUUSD",
+    direction: "Long",
+    session: "Asia",
+    entry: 2310.00,
+    exit: 2316.40,
+    lotSize: 0.70,
+    riskAmount: 80,
+    pnl: 118,
+    notes: "Early session breakout"
+  },
+  {
+    id: "t9",
+    date: "2026-04-19",
+    symbol: "XAUUSD",
+    direction: "Short",
+    session: "London",
+    entry: 2322.20,
+    exit: 2317.90,
+    lotSize: 1.30,
+    riskAmount: 125,
+    pnl: 214,
+    notes: "Reversal after sweep"
+  },
+  {
+    id: "t10",
+    date: "2026-04-20",
+    symbol: "XAUUSD",
+    direction: "Long",
+    session: "New York",
+    entry: 2314.00,
+    exit: 2311.20,
+    lotSize: 1.00,
+    riskAmount: 95,
+    pnl: -84,
+    notes: "Late session loss"
+  }
+];
+
+</script>
+  <script>
+const STORAGE_KEY = "xauusd_elite_journal_trades_v2";
+const TAB_KEY = "xauusd_elite_journal_active_tab";
+
+const state = {
+  trades: [],
+  filtered: [],
+  filters: {
+    from: "",
+    to: "",
+    session: "all",
+    direction: "all"
+  },
+  activeTab: "dashboard"
+};
+
+const el = {
+  kpiGrid: document.getElementById("kpiGrid"),
+  performanceSummary: document.getElementById("performanceSummary"),
+  analyticsInsightGrid: document.getElementById("analyticsInsightGrid"),
+  tradeTableBody: document.getElementById("tradeTableBody"),
+  tradeCountLabel: document.getElementById("tradeCountLabel"),
+  tradeForm: document.getElementById("tradeForm"),
+  resetDemoBtn: document.getElementById("resetDemoBtn"),
+  filterFrom: document.getElementById("filterFrom"),
+  filterTo: document.getElementById("filterTo"),
+  filterSession: document.getElementById("filterSession"),
+  filterDirection: document.getElementById("filterDirection"),
+  applyFiltersBtn: document.getElementById("applyFiltersBtn"),
+  clearFiltersBtn: document.getElementById("clearFiltersBtn"),
+  equityCanvas: document.getElementById("equityCanvas"),
+  sessionCanvas: document.getElementById("sessionCanvas"),
+  directionCanvas: document.getElementById("directionCanvas"),
+  distributionCanvas: document.getElementById("distributionCanvas"),
+  tabButtons: document.querySelectorAll(".tab-btn"),
+  tabPanels: document.querySelectorAll(".tab-panel"),
+  exportTradesBtn: document.getElementById("exportTradesBtn"),
+  importTradesInput: document.getElementById("importTradesInput"),
+  clearStorageBtn: document.getElementById("clearStorageBtn"),
+  settingsMessage: document.getElementById("settingsMessage")
+};
+
+function safeNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function formatCurrency(value) {
+  const amount = safeNumber(value);
+  return amount.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+}
+
+function formatNegativeCurrency(value) {
+  const amount = Math.abs(safeNumber(value));
+  return `-${amount.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 })}`;
+}
+
+function formatNumber(value, digits = 2) {
+  return safeNumber(value).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+function formatPercent(value) {
+  return `${formatNumber(value, 1)}%`;
+}
+
+function getStoredTrades() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getStoredTab() {
+  try {
+    const saved = localStorage.getItem(TAB_KEY);
+    return saved || "dashboard";
+  } catch {
+    return "dashboard";
+  }
+}
+
+function persistTrades() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.trades));
+}
+
+function persistActiveTab() {
+  localStorage.setItem(TAB_KEY, state.activeTab);
+}
+
+function setSettingsMessage(message, isError = false) {
+  if (!el.settingsMessage) return;
+  el.settingsMessage.textContent = message;
+  el.settingsMessage.style.color = isError ? "#ffd5d5" : "#b3bfd1";
+}
+
+function normalizeTrade(trade) {
+  const riskAmount = Math.max(0.01, safeNumber(trade.riskAmount));
+  const pnl = safeNumber(trade.pnl);
+  return {
+    id: trade.id || `t_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
+    date: trade.date || new Date().toISOString().slice(0, 10),
+    symbol: String(trade.symbol || "XAUUSD").trim() || "XAUUSD",
+    direction: trade.direction === "Short" ? "Short" : "Long",
+    session: ["London", "New York", "Asia"].includes(trade.session) ? trade.session : "London",
+    entry: safeNumber(trade.entry),
+    exit: safeNumber(trade.exit),
+    lotSize: Math.max(0.01, safeNumber(trade.lotSize)),
+    riskAmount,
+    pnl,
+    notes: String(trade.notes || "").trim(),
+    rMultiple: pnl / riskAmount
+  };
+}
+
+function loadTrades() {
+  const stored = getStoredTrades();
+  const seed = Array.isArray(window.tradeSeedData) ? window.tradeSeedData : [];
+  state.trades = (stored && stored.length ? stored : seed).map(normalizeTrade).sort((a, b) => b.date.localeCompare(a.date));
+  persistTrades();
+}
+
+function getSessions(trades) {
+  return [...new Set(trades.map((t) => t.session))];
+}
+
+function populateSessionFilter() {
+  const sessions = getSessions(state.trades);
+  el.filterSession.innerHTML = `<option value="all">All sessions</option>` + sessions.map((s) => `<option value="${s}">${s}</option>`).join("");
+  el.filterSession.value = state.filters.session;
+}
+
+function applyFilters() {
+  state.filters.from = el.filterFrom.value;
+  state.filters.to = el.filterTo.value;
+  state.filters.session = el.filterSession.value;
+  state.filters.direction = el.filterDirection.value;
+
+  state.filtered = state.trades.filter((trade) => {
+    if (state.filters.from && trade.date < state.filters.from) return false;
+    if (state.filters.to && trade.date > state.filters.to) return false;
+    if (state.filters.session !== "all" && trade.session !== state.filters.session) return false;
+    if (state.filters.direction !== "all" && trade.direction !== state.filters.direction) return false;
+    return true;
+  }).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function calculateMetrics(trades) {
+  const totalTrades = trades.length;
+  const wins = trades.filter((t) => t.pnl > 0);
+  const losses = trades.filter((t) => t.pnl < 0);
+  const grossProfit = wins.reduce((sum, t) => sum + t.pnl, 0);
+  const grossLoss = losses.reduce((sum, t) => sum + Math.abs(t.pnl), 0);
+  const netProfit = trades.reduce((sum, t) => sum + t.pnl, 0);
+  const winRate = totalTrades ? (wins.length / totalTrades) * 100 : 0;
+  const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? grossProfit : 0) : grossProfit / grossLoss;
+  const expectancy = totalTrades ? trades.reduce((sum, t) => sum + t.rMultiple, 0) / totalTrades : 0;
+
+  let running = 0;
+  let peak = 0;
+  let maxDrawdown = 0;
+  const equityPoints = trades.map((t) => {
+    running += t.pnl;
+    peak = Math.max(peak, running);
+    maxDrawdown = Math.max(maxDrawdown, peak - running);
+    return { label: t.date, value: running };
+  });
+
+  const avgR = totalTrades ? trades.reduce((sum, t) => sum + t.rMultiple, 0) / totalTrades : 0;
+
+  const sessionTotals = ["Asia", "London", "New York"].map((session) => ({
+    label: session,
+    value: trades.filter((t) => t.session === session).reduce((sum, t) => sum + t.pnl, 0)
+  }));
+
+  const longTotal = trades.filter((t) => t.direction === "Long").reduce((sum, t) => sum + t.pnl, 0);
+  const shortTotal = trades.filter((t) => t.direction === "Short").reduce((sum, t) => sum + t.pnl, 0);
+
+  return {
+    totalTrades,
+    grossProfit,
+    grossLoss,
+    netProfit,
+    winRate,
+    profitFactor: Number.isFinite(profitFactor) ? profitFactor : 0,
+    expectancy,
+    avgR,
+    maxDrawdown,
+    wins: wins.length,
+    losses: losses.length,
+    equityPoints,
+    sessionTotals,
+    directionTotals: [
+      { label: "Long", value: longTotal },
+      { label: "Short", value: shortTotal }
+    ]
+  };
+}
+
+function renderKpis(metrics) {
+  const items = [
+    { label: "Net Profit", value: formatCurrency(metrics.netProfit), sub: "Filtered trades" },
+    { label: "Win Rate", value: formatPercent(metrics.winRate), sub: `${metrics.wins} wins / ${metrics.losses} losses` },
+    { label: "Profit Factor", value: formatNumber(metrics.profitFactor), sub: "Gross profit ÷ gross loss" },
+    { label: "Expectancy", value: `${formatNumber(metrics.expectancy)}R`, sub: "Average R per trade" },
+    { label: "Max Drawdown", value: metrics.maxDrawdown ? formatNegativeCurrency(metrics.maxDrawdown) : formatCurrency(0), sub: "Peak-to-trough equity drop" },
+    { label: "Total Trades", value: `${metrics.totalTrades}`, sub: "Current filtered count" }
+  ];
+
+  el.kpiGrid.innerHTML = items.map((item) => `
+    <article class="kpi-card">
+      <div class="kpi-label">${item.label}</div>
+      <div class="kpi-value ${item.label === "Max Drawdown" ? "text-negative" : ""}">${item.value}</div>
+      <div class="kpi-sub">${item.sub}</div>
+    </article>
+  `).join("");
+}
+
+function renderSummary(metrics) {
+  const bestTrade = state.filtered.reduce((best, trade) => !best || trade.pnl > best.pnl ? trade : best, null);
+  const worstTrade = state.filtered.reduce((worst, trade) => !worst || trade.pnl < worst.pnl ? trade : worst, null);
+
+  const rows = [
+    ["Gross Profit", formatCurrency(metrics.grossProfit)],
+    ["Gross Loss", formatCurrency(metrics.grossLoss)],
+    ["Average R", `${formatNumber(metrics.avgR)}R`],
+    ["Best Trade", bestTrade ? `${formatCurrency(bestTrade.pnl)} · ${bestTrade.notes || bestTrade.session}` : "—"],
+    ["Worst Trade", worstTrade ? `${formatCurrency(worstTrade.pnl)} · ${worstTrade.notes || worstTrade.session}` : "—"],
+    ["Long P/L", formatCurrency(metrics.directionTotals.find((x) => x.label === "Long").value)],
+    ["Short P/L", formatCurrency(metrics.directionTotals.find((x) => x.label === "Short").value)]
+  ];
+
+  el.performanceSummary.innerHTML = rows.map(([label, value]) => `
+    <div class="summary-item">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `).join("");
+}
+
+function renderInsights(metrics) {
+  const insights = [
+    {
+      title: "Session leader",
+      value: metrics.sessionTotals.slice().sort((a, b) => b.value - a.value)[0]
+    },
+    {
+      title: "Direction leader",
+      value: metrics.directionTotals.slice().sort((a, b) => b.value - a.value)[0]
+    },
+    {
+      title: "Risk quality",
+      value: { label: "Average R", value: metrics.avgR }
+    },
+    {
+      title: "Consistency",
+      value: { label: "Win rate", value: metrics.winRate }
+    }
+  ];
+
+  el.analyticsInsightGrid.innerHTML = insights.map((item) => {
+    let body = "—";
+    if (item.title === "Risk quality") body = `${formatNumber(item.value.value)}R average`;
+    else if (item.title === "Consistency") body = `${formatPercent(item.value.value)} over current filters`;
+    else body = `${item.value.label} · ${formatCurrency(item.value.value)}`;
+
+    return `
+      <div class="insight-item">
+        <span>${item.title}</span>
+        <strong>${body}</strong>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderTradeTable() {
+  el.tradeCountLabel.textContent = `${state.filtered.length} ${state.filtered.length === 1 ? "trade" : "trades"}`;
+
+  if (!state.filtered.length) {
+    el.tradeTableBody.innerHTML = `<tr><td colspan="12" class="empty-state">No trades match the current filters.</td></tr>`;
+    return;
+  }
+
+  el.tradeTableBody.innerHTML = [...state.filtered].sort((a, b) => b.date.localeCompare(a.date)).map((trade) => `
+    <tr>
+      <td>${trade.date}</td>
+      <td>${trade.symbol}</td>
+      <td>${trade.direction}</td>
+      <td>${trade.session}</td>
+      <td>${formatNumber(trade.entry)}</td>
+      <td>${formatNumber(trade.exit)}</td>
+      <td>${formatNumber(trade.lotSize)}</td>
+      <td>${formatCurrency(trade.riskAmount)}</td>
+      <td class="${trade.pnl >= 0 ? "pnl-positive" : "pnl-negative"}">${formatCurrency(trade.pnl)}</td>
+      <td class="${trade.rMultiple >= 0 ? "pnl-positive" : "pnl-negative"}">${formatNumber(trade.rMultiple)}R</td>
+      <td>${trade.notes || "—"}</td>
+      <td><button class="delete-btn" data-id="${trade.id}" title="Delete trade" type="button">✕</button></td>
+    </tr>
+  `).join("");
+}
+
+function getCanvasContext(canvas) {
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const cssWidth = canvas.clientWidth || canvas.width;
+  const cssHeight = canvas.clientHeight || canvas.height;
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
+  return { ctx, width: cssWidth, height: cssHeight };
+}
+
+function roundedRect(ctx, x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+}
+
+function drawEmptyChart(canvas, message) {
+  const { ctx, width, height } = getCanvasContext(canvas);
+  ctx.fillStyle = "#9aa4b2";
+  ctx.font = "14px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(message, width / 2, height / 2);
+}
+
+function drawLineChart(canvas, points, options = {}) {
+  if (!points.length) return drawEmptyChart(canvas, "No data to plot");
+  const { ctx, width, height } = getCanvasContext(canvas);
+  const pad = { top: 24, right: 18, bottom: 34, left: 48 };
+  const values = points.map((p) => p.value);
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 0);
+  const range = max - min || 1;
+
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i += 1) {
+    const y = pad.top + (i / 4) * (height - pad.top - pad.bottom);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
+    ctx.stroke();
+  }
+
+  const coords = points.map((point, index) => {
+    const x = pad.left + (index / Math.max(1, points.length - 1)) * (width - pad.left - pad.right);
+    const y = height - pad.bottom - ((point.value - min) / range) * (height - pad.top - pad.bottom);
+    return { x, y, label: point.label };
+  });
+
+  const gradient = ctx.createLinearGradient(0, pad.top, 0, height - pad.bottom);
+  gradient.addColorStop(0, "rgba(212,175,55,0.32)");
+  gradient.addColorStop(1, "rgba(212,175,55,0.02)");
+
+  ctx.beginPath();
+  ctx.moveTo(coords[0].x, height - pad.bottom);
+  coords.forEach((c) => ctx.lineTo(c.x, c.y));
+  ctx.lineTo(coords[coords.length - 1].x, height - pad.bottom);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  ctx.beginPath();
+  coords.forEach((c, i) => i === 0 ? ctx.moveTo(c.x, c.y) : ctx.lineTo(c.x, c.y));
+  ctx.strokeStyle = options.color || "#d4af37";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  coords.forEach((c) => {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#f5f7fa";
+    ctx.fill();
+  });
+
+  ctx.fillStyle = "#9aa4b2";
+  ctx.font = "12px Inter, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(formatCurrency(max), 8, pad.top + 4);
+  ctx.fillText(formatCurrency(min), 8, height - pad.bottom);
+  ctx.textAlign = "center";
+  ctx.fillText(points[0].label, pad.left, height - 10);
+  ctx.fillText(points[points.length - 1].label, width - pad.right, height - 10);
+}
+
+function drawBarChart(canvas, items, options = {}) {
+  if (!items.length) return drawEmptyChart(canvas, "No data to plot");
+  const { ctx, width, height } = getCanvasContext(canvas);
+  const pad = { top: 20, right: 18, bottom: 40, left: 48 };
+  const maxAbs = Math.max(1, ...items.map((i) => Math.abs(i.value)));
+  const chartH = height - pad.top - pad.bottom;
+  const zeroY = pad.top + chartH / 2;
+
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.beginPath();
+  ctx.moveTo(pad.left, zeroY);
+  ctx.lineTo(width - pad.right, zeroY);
+  ctx.stroke();
+
+  const slot = (width - pad.left - pad.right) / items.length;
+  items.forEach((item, index) => {
+    const barW = Math.min(54, slot * 0.52);
+    const x = pad.left + index * slot + (slot - barW) / 2;
+    const barH = (Math.abs(item.value) / maxAbs) * (chartH / 2 - 10);
+    const y = item.value >= 0 ? zeroY - barH : zeroY;
+    const color = item.value >= 0 ? (options.positiveColor || "#37c978") : (options.negativeColor || "#ff6b6b");
+    roundedRect(ctx, x, y, barW, barH || 2, 10);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.fillStyle = "#f5f7fa";
+    ctx.font = "12px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(item.label, x + barW / 2, height - 14);
+    ctx.fillStyle = item.value >= 0 ? "#37c978" : "#ff6b6b";
+    ctx.fillText(formatCurrency(item.value), x + barW / 2, item.value >= 0 ? y - 8 : y + barH + 16);
+  });
+}
+
+function drawDonutChart(canvas, parts) {
+  const total = parts.reduce((sum, p) => sum + p.value, 0);
+  if (!total) return drawEmptyChart(canvas, "No data to plot");
+  const { ctx, width, height } = getCanvasContext(canvas);
+  const cx = width / 2;
+  const cy = height / 2;
+  const radius = Math.min(width, height) * 0.28;
+  const lineW = radius * 0.48;
+  let start = -Math.PI / 2;
+
+  parts.forEach((part) => {
+    const slice = (part.value / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, start, start + slice);
+    ctx.strokeStyle = part.color;
+    ctx.lineWidth = lineW;
+    ctx.lineCap = "butt";
+    ctx.stroke();
+    start += slice;
+  });
+
+  ctx.fillStyle = "#f5f7fa";
+  ctx.font = "700 24px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(String(total), cx, cy - 4);
+  ctx.fillStyle = "#9aa4b2";
+  ctx.font = "13px Inter, sans-serif";
+  ctx.fillText("Trades", cx, cy + 18);
+
+  const legendX = 24;
+  let legendY = 28;
+  parts.forEach((part) => {
+    ctx.fillStyle = part.color;
+    roundedRect(ctx, legendX, legendY - 10, 12, 12, 4);
+    ctx.fill();
+    ctx.fillStyle = "#f5f7fa";
+    ctx.font = "13px Inter, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${part.label}: ${part.value}`, legendX + 20, legendY);
+    legendY += 22;
+  });
+}
+
+function renderCharts(metrics) {
+  drawLineChart(el.equityCanvas, metrics.equityPoints, { color: "#d4af37" });
+  drawBarChart(el.sessionCanvas, metrics.sessionTotals);
+  drawBarChart(el.directionCanvas, metrics.directionTotals);
+  drawDonutChart(el.distributionCanvas, [
+    { label: "Wins", value: metrics.wins, color: "#37c978" },
+    { label: "Losses", value: metrics.losses, color: "#ff6b6b" }
+  ]);
+}
+
+function refreshDashboard() {
+  applyFilters();
+  const metrics = calculateMetrics(state.filtered);
+  renderKpis(metrics);
+  renderSummary(metrics);
+  renderInsights(metrics);
+  renderTradeTable();
+  renderCharts(metrics);
+}
+
+function handleAddTrade(event) {
+  event.preventDefault();
+  const formData = new FormData(el.tradeForm);
+  const trade = normalizeTrade(Object.fromEntries(formData.entries()));
+  state.trades.unshift(trade);
+  state.trades.sort((a, b) => b.date.localeCompare(a.date));
+  persistTrades();
+  populateSessionFilter();
+  refreshDashboard();
+  el.tradeForm.reset();
+  initDefaultFormValues();
+  setSettingsMessage("Trade saved successfully.");
+}
+
+function handleTableActions(event) {
+  const btn = event.target.closest(".delete-btn");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  state.trades = state.trades.filter((trade) => trade.id !== id);
+  persistTrades();
+  populateSessionFilter();
+  refreshDashboard();
+  setSettingsMessage("Trade deleted successfully.");
+}
+
+function restoreDemoData() {
+  state.trades = (window.tradeSeedData || []).map(normalizeTrade).sort((a, b) => b.date.localeCompare(a.date));
+  persistTrades();
+  populateSessionFilter();
+  refreshDashboard();
+  setSettingsMessage("Demo data restored.");
+}
+
+function clearFilters() {
+  state.filters = { from: "", to: "", session: "all", direction: "all" };
+  el.filterFrom.value = "";
+  el.filterTo.value = "";
+  el.filterSession.value = "all";
+  el.filterDirection.value = "all";
+  refreshDashboard();
+}
+
+function initDefaultFormValues() {
+  const today = new Date().toISOString().slice(0, 10);
+  el.tradeForm.elements.date.value = today;
+  el.tradeForm.elements.symbol.value = "XAUUSD";
+  el.tradeForm.elements.entry.value = "0";
+  el.tradeForm.elements.exit.value = "0";
+  el.tradeForm.elements.lotSize.value = "1.00";
+  el.tradeForm.elements.riskAmount.value = "100";
+  el.tradeForm.elements.pnl.value = "0";
+}
+
+function setActiveTab(tabName) {
+  state.activeTab = tabName;
+  persistActiveTab();
+
+  el.tabButtons.forEach((button) => {
+    const isActive = button.dataset.tab === tabName;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  el.tabPanels.forEach((panel) => {
+    const isActive = panel.id === `tab-${tabName}`;
+    panel.classList.toggle("is-active", isActive);
+    panel.hidden = !isActive;
+  });
+
+  requestAnimationFrame(refreshDashboard);
+}
+
+function exportTrades() {
+  const payload = JSON.stringify(state.trades, null, 2);
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = `xauusd-elite-journal-${stamp}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setSettingsMessage("Trades exported successfully.");
+}
+
+function importTrades(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || "[]"));
+      if (!Array.isArray(parsed)) throw new Error("Invalid format");
+      state.trades = parsed.map(normalizeTrade).sort((a, b) => b.date.localeCompare(a.date));
+      persistTrades();
+      populateSessionFilter();
+      refreshDashboard();
+      setSettingsMessage("Trades imported successfully.");
+      event.target.value = "";
+    } catch {
+      setSettingsMessage("Import failed. Please use a valid trades JSON file.", true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearStoredTrades() {
+  state.trades = [];
+  persistTrades();
+  populateSessionFilter();
+  refreshDashboard();
+  setSettingsMessage("Saved trades cleared from this browser.");
+}
+
+function bindEvents() {
+  el.tradeForm.addEventListener("submit", handleAddTrade);
+  el.tradeTableBody.addEventListener("click", handleTableActions);
+  el.applyFiltersBtn.addEventListener("click", refreshDashboard);
+  el.clearFiltersBtn.addEventListener("click", clearFilters);
+  el.resetDemoBtn.addEventListener("click", restoreDemoData);
+  el.exportTradesBtn.addEventListener("click", exportTrades);
+  el.importTradesInput.addEventListener("change", importTrades);
+  el.clearStorageBtn.addEventListener("click", clearStoredTrades);
+  el.tabButtons.forEach((button) => {
+    button.addEventListener("click", () => setActiveTab(button.dataset.tab));
+  });
+  window.addEventListener("resize", refreshDashboard);
+}
+
+function init() {
+  state.activeTab = getStoredTab();
+  loadTrades();
+  populateSessionFilter();
+  initDefaultFormValues();
+  bindEvents();
+  refreshDashboard();
+  setActiveTab(state.activeTab);
+}
+
+init();
+
+</script>
+</body>
+</html>
