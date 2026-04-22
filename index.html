@@ -107,6 +107,7 @@ background:var(--panel2);
 border-radius:16px;
 margin-top:15px;
 }
+#authMsg{margin-top:15px;min-height:22px}
 @media(max-width:768px){
 h1{font-size:28px}
 }
@@ -122,17 +123,17 @@ h1{font-size:28px}
 <small>Premium secure login</small>
 
 <div class="tabs" style="margin-top:20px;">
-<button id="loginTab" class="tab active">Login</button>
-<button id="signupTab" class="tab">Sign Up</button>
+<button type="button" id="loginTab" class="tab active">Login</button>
+<button type="button" id="signupTab" class="tab">Sign Up</button>
 </div>
 
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="password" placeholder="Password">
 
-<button id="authBtn">Login</button>
-<button id="resetBtn" class="secondary">Reset Password</button>
+<button type="button" id="authBtn">Login</button>
+<button type="button" id="resetBtn" class="secondary">Reset Password</button>
 
-<p id="authMsg" style="margin-top:15px;"></p>
+<p id="authMsg"></p>
 </div>
 
 <!-- APP -->
@@ -144,20 +145,19 @@ h1{font-size:28px}
 <h1>XAUUSD Elite Journal</h1>
 <small id="userEmail"></small>
 </div>
-<button id="logoutBtn">Logout</button>
+<button type="button" id="logoutBtn">Logout</button>
 </div>
 </div>
 
 <div class="tabs">
-<button class="tab active navTab" data-page="dashboard">Dashboard</button>
-<button class="tab navTab" data-page="analytics">Analytics</button>
-<button class="tab navTab" data-page="journal">Journal</button>
-<button class="tab navTab" data-page="settings">Settings</button>
+<button type="button" class="tab active navTab" data-page="dashboard">Dashboard</button>
+<button type="button" class="tab navTab" data-page="analytics">Analytics</button>
+<button type="button" class="tab navTab" data-page="journal">Journal</button>
+<button type="button" class="tab navTab" data-page="settings">Settings</button>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard" class="page">
-
 <div class="grid">
 <div class="metric">
 <h3>Net Profit</h3>
@@ -184,7 +184,6 @@ h1{font-size:28px}
 <h2>Equity Curve</h2>
 <canvas id="chart" width="900" height="220"></canvas>
 </div>
-
 </div>
 
 <!-- ANALYTICS -->
@@ -197,7 +196,6 @@ h1{font-size:28px}
 
 <!-- JOURNAL -->
 <div id="journal" class="page hidden">
-
 <div class="card">
 <h2>Add Trade</h2>
 
@@ -211,7 +209,7 @@ h1{font-size:28px}
 
 <input type="number" id="pnl" placeholder="Profit / Loss">
 
-<button id="saveTrade">Save Trade</button>
+<button type="button" id="saveTrade">Save Trade</button>
 </div>
 
 <div class="card">
@@ -229,7 +227,6 @@ h1{font-size:28px}
 </thead>
 <tbody id="tradeRows"></tbody>
 </table>
-
 </div>
 </div>
 
@@ -246,167 +243,219 @@ h1{font-size:28px}
 
 <script>
 const SUPABASE_URL = "https://wvptlyyxygoyipwbtzmp.supabase.co";
-
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18";
 
-const supabase = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let supabaseClient = null;
+let mode = "login";
 
-let mode="login";
+const authBox = document.getElementById("authBox");
+const appBox = document.getElementById("appBox");
+const authMsg = document.getElementById("authMsg");
 
-const authBox=document.getElementById("authBox");
-const appBox=document.getElementById("appBox");
-
-document.getElementById("loginTab").onclick=()=>{
-mode="login";
-document.getElementById("authBtn").innerText="Login";
-};
-
-document.getElementById("signupTab").onclick=()=>{
-mode="signup";
-document.getElementById("authBtn").innerText="Create Account";
-};
-
-document.getElementById("authBtn").onclick=async()=>{
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
-
-let res;
-
-if(mode==="login"){
-res=await supabase.auth.signInWithPassword({email,password});
-}else{
-res=await supabase.auth.signUp({email,password});
+function msg(text, error=false){
+  authMsg.textContent = text;
+  authMsg.style.color = error ? "#ff6b6b" : "#9aa4b2";
 }
 
-document.getElementById("authMsg").innerText =
-res.error ? res.error.message : "Success";
+function init(){
+  if(!window.supabase){
+    msg("Supabase library failed to load.", true);
+    return;
+  }
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  checkUser();
+}
 
-checkUser();
+document.getElementById("loginTab").onclick = ()=>{
+  mode="login";
+  document.getElementById("authBtn").textContent="Login";
+  document.getElementById("loginTab").classList.add("active");
+  document.getElementById("signupTab").classList.remove("active");
 };
 
-document.getElementById("resetBtn").onclick=async()=>{
-const email=document.getElementById("email").value;
-await supabase.auth.resetPasswordForEmail(email);
-document.getElementById("authMsg").innerText="Reset email sent";
+document.getElementById("signupTab").onclick = ()=>{
+  mode="signup";
+  document.getElementById("authBtn").textContent="Create Account";
+  document.getElementById("signupTab").classList.add("active");
+  document.getElementById("loginTab").classList.remove("active");
 };
 
-document.getElementById("logoutBtn").onclick=async()=>{
-await supabase.auth.signOut();
-location.reload();
+document.getElementById("authBtn").onclick = async ()=>{
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    msg("Enter email and password.", true);
+    return;
+  }
+
+  msg("Please wait...");
+
+  let result;
+
+  if(mode==="login"){
+    result = await supabaseClient.auth.signInWithPassword({email,password});
+  }else{
+    result = await supabaseClient.auth.signUp({email,password});
+  }
+
+  if(result.error){
+    msg(result.error.message, true);
+    return;
+  }
+
+  msg("Success");
+  checkUser();
+};
+
+document.getElementById("resetBtn").onclick = async ()=>{
+  const email = document.getElementById("email").value.trim();
+
+  if(!email){
+    msg("Enter email first.", true);
+    return;
+  }
+
+  const {error} = await supabaseClient.auth.resetPasswordForEmail(email);
+
+  if(error){
+    msg(error.message, true);
+    return;
+  }
+
+  msg("Reset email sent.");
+};
+
+document.getElementById("logoutBtn").onclick = async ()=>{
+  await supabaseClient.auth.signOut();
+  location.reload();
 };
 
 async function checkUser(){
-const {data}=await supabase.auth.getUser();
+  const {data} = await supabaseClient.auth.getUser();
 
-if(data.user){
-authBox.classList.add("hidden");
-appBox.classList.remove("hidden");
-document.getElementById("userEmail").innerText=data.user.email;
-loadTrades();
-}
+  if(data.user){
+    authBox.classList.add("hidden");
+    appBox.classList.remove("hidden");
+    document.getElementById("userEmail").textContent = data.user.email;
+    loadTrades();
+  }
 }
 
 document.querySelectorAll(".navTab").forEach(btn=>{
-btn.onclick=()=>{
-document.querySelectorAll(".navTab").forEach(x=>x.classList.remove("active"));
-btn.classList.add("active");
+  btn.onclick = ()=>{
+    document.querySelectorAll(".navTab").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
 
-document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
-document.getElementById(btn.dataset.page).classList.remove("hidden");
-};
+    document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+    document.getElementById(btn.dataset.page).classList.remove("hidden");
+  };
 });
 
-document.getElementById("saveTrade").onclick=async()=>{
-const {data}=await supabase.auth.getUser();
+document.getElementById("saveTrade").onclick = async ()=>{
+  const {data:userData} = await supabaseClient.auth.getUser();
 
-await supabase.from("trades").insert({
-user_id:data.user.id,
-date:document.getElementById("date").value,
-symbol:document.getElementById("symbol").value,
-direction:document.getElementById("direction").value,
-pnl:Number(document.getElementById("pnl").value)
-});
+  await supabaseClient.from("trades").insert({
+    user_id:userData.user.id,
+    date:document.getElementById("date").value,
+    symbol:document.getElementById("symbol").value,
+    direction:document.getElementById("direction").value,
+    pnl:Number(document.getElementById("pnl").value)
+  });
 
-loadTrades();
+  loadTrades();
 };
 
 async function loadTrades(){
-const {data}=await supabase
-.from("trades")
-.select("*")
-.order("date",{ascending:false});
+  const {data,error} = await supabaseClient
+    .from("trades")
+    .select("*")
+    .order("date",{ascending:false});
 
-let rows="";
-let profit=0;
-let wins=0;
+  if(error)return;
 
-data.forEach(t=>{
-profit+=Number(t.pnl);
-if(t.pnl>0)wins++;
+  let rows="";
+  let profit=0;
+  let wins=0;
+  let grossProfit=0;
+  let grossLoss=0;
 
-rows+=`
-<tr>
-<td>${t.date}</td>
-<td>${t.symbol}</td>
-<td>${t.direction}</td>
-<td class="${t.pnl>=0?'green':'red'}">$${t.pnl}</td>
-<td><button onclick="delTrade('${t.id}')">X</button></td>
-</tr>
-`;
-});
+  data.forEach(t=>{
+    const pnl=Number(t.pnl);
+    profit+=pnl;
 
-document.getElementById("tradeRows").innerHTML=rows;
-document.getElementById("netProfit").innerText="$"+profit;
-document.getElementById("totalTrades").innerText=data.length;
-document.getElementById("winRate").innerText=
-data.length?Math.round((wins/data.length)*100)+"%":"0%";
-document.getElementById("pf").innerText="1.8";
+    if(pnl>0){
+      wins++;
+      grossProfit+=pnl;
+    }else if(pnl<0){
+      grossLoss+=Math.abs(pnl);
+    }
 
-document.getElementById("stats").innerHTML=
-"Winning Trades: "+wins+"<br>Total Trades: "+data.length;
+    rows += `
+      <tr>
+        <td>${t.date}</td>
+        <td>${t.symbol}</td>
+        <td>${t.direction}</td>
+        <td class="${pnl>=0?'green':'red'}">$${pnl}</td>
+        <td><button type="button" onclick="delTrade('${t.id}')">X</button></td>
+      </tr>
+    `;
+  });
 
-drawChart(data);
+  document.getElementById("tradeRows").innerHTML = rows;
+  document.getElementById("netProfit").textContent = "$"+profit.toFixed(2);
+  document.getElementById("totalTrades").textContent = data.length;
+  document.getElementById("winRate").textContent =
+    data.length ? Math.round((wins/data.length)*100)+"%" : "0%";
+
+  const pf = grossLoss===0 ? grossProfit : grossProfit/grossLoss;
+  document.getElementById("pf").textContent = Number.isFinite(pf)?pf.toFixed(2):"0";
+
+  document.getElementById("stats").innerHTML =
+    "Winning Trades: "+wins+"<br>Total Trades: "+data.length;
+
+  drawChart(data);
 }
 
 async function delTrade(id){
-await supabase.from("trades").delete().eq("id",id);
-loadTrades();
+  await supabaseClient.from("trades").delete().eq("id",id);
+  loadTrades();
 }
 
 function drawChart(data){
-const c=document.getElementById("chart");
-const ctx=c.getContext("2d");
-ctx.clearRect(0,0,c.width,c.height);
+  const c=document.getElementById("chart");
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
 
-let eq=0;
-let vals=[];
+  let eq=0;
+  let vals=[];
 
-data.reverse().forEach(t=>{
-eq+=Number(t.pnl);
-vals.push(eq);
-});
+  [...data].reverse().forEach(t=>{
+    eq+=Number(t.pnl);
+    vals.push(eq);
+  });
 
-if(!vals.length)return;
+  if(!vals.length)return;
 
-let max=Math.max(...vals);
-let min=Math.min(...vals);
+  const max=Math.max(...vals);
+  const min=Math.min(...vals);
 
-ctx.strokeStyle="#d4af37";
-ctx.lineWidth=3;
-ctx.beginPath();
+  ctx.strokeStyle="#d4af37";
+  ctx.lineWidth=3;
+  ctx.beginPath();
 
-vals.forEach((v,i)=>{
-let x=i*(c.width/(vals.length-1||1));
-let y=c.height-((v-min)/(max-min||1))*c.height;
+  vals.forEach((v,i)=>{
+    const x=i*(c.width/(vals.length-1||1));
+    const y=c.height-((v-min)/((max-min)||1))*c.height;
 
-if(i===0)ctx.moveTo(x,y);
-else ctx.lineTo(x,y);
-});
+    if(i===0)ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
 
-ctx.stroke();
+  ctx.stroke();
 }
 
-checkUser();
+init();
 </script>
 </body>
 </html>
