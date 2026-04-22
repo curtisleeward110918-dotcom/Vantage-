@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XAUUSD Elite Journal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+:root{
+  --bg:#07111f;--panel:#0d1a2b;--panel2:#12233b;--gold:#d4af37;--text:#f8fbff;
+  --muted:#b7c2d4;--soft:#8fa2c0;--line:rgba(212,175,55,.16);--line2:rgba(255,255,255,.08);
+  --green:#34d399;--red:#fb7185;--shadow:0 22px 60px rgba(2,8,20,.45);--r:22px
+}
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--text);padding:18px;
+  background:
+    radial-gradient(circle at top right, rgba(212,175,55,.09), transparent 22%),
+    radial-gradient(circle at bottom left, rgba(143,162,192,.10), transparent 24%),
+    linear-gradient(180deg,var(--bg),#091523 45%,#08121e 100%);
+}
+h1,h2,h3,p{margin:0}.hidden{display:none!important}
+.app{max-width:1480px;margin:0 auto;display:grid;gap:18px}
+.card,.topbar,.metric{
+  position:relative;overflow:hidden;border-radius:var(--r);border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012)),var(--panel)
+}
+.card:before,.topbar:before,.metric:before{
+  content:"";position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.52),transparent)
+}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:26px 28px}
+.eyebrow{color:var(--gold);text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:700;margin-bottom:8px}
+h1{font-size:clamp(30px,4vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:8px}
+.subcopy{color:var(--muted);max-width:760px;font-size:14px;line-height:1.55}
+.top-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;
+  border:1px solid rgba(212,175,55,.22);background:rgba(212,175,55,.10);color:#f2d57c;font-weight:700;font-size:13px
+}
+.btn,.file-btn{
+  height:44px;padding:0 16px;border-radius:12px;border:1px solid rgba(212,175,55,.22);
+  background:linear-gradient(180deg,rgba(212,175,55,.18),rgba(212,175,55,.08));
+  color:var(--text);display:inline-flex;align-items:center;justify-content:center;
+  text-decoration:none;cursor:pointer;font-weight:700
+}
+.btn.secondary,.file-btn.secondary{background:var(--panel2);border-color:var(--line2)}
+.btn.danger{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.2);color:#ffd7de}
+.card{padding:22px}
+.tabs{display:flex;gap:10px;flex-wrap:wrap}
+.tab{
+  min-height:46px;padding:0 18px;border-radius:14px;border:1px solid var(--line2);
+  background:var(--panel2);color:var(--text);font-weight:700;cursor:pointer
+}
+.tab.active{border-color:rgba(212,175,55,.34);background:linear-gradient(180deg,rgba(212,175,55,.18),rgba(212,175,55,.07))}
+.page{display:none;gap:18px}.page.active{display:grid}
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.section-head h2{font-size:20px;letter-spacing:-.02em}
+.section-head p{color:var(--muted);font-size:14px;line-height:1.5}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:980px;margin:0 auto}
+label{display:grid;gap:8px}
+label span{color:var(--muted);font-size:13px;font-weight:700}
+input,select{
+  width:100%;height:46px;border-radius:12px;border:1px solid var(--line2);
+  background:var(--panel2);color:var(--text);padding:0 14px;outline:none
+}
+input:focus,select:focus{border-color:rgba(212,175,55,.42);box-shadow:0 0 0 3px rgba(212,175,55,.08)}
+.status{
+  margin-top:14px;min-height:46px;padding:12px 14px;border-radius:14px;background:var(--panel2);
+  border:1px solid var(--line2);color:var(--muted);display:flex;align-items:center
+}
+.status.ok{color:#def9ee;border-color:rgba(52,211,153,.22)}
+.status.err{color:#ffd7de;border-color:rgba(251,113,133,.22)}
+.note{margin-top:14px;padding:14px 16px;border-radius:16px;background:var(--panel2);border:1px solid var(--line2);color:#dce6f7;font-size:13px;line-height:1.55}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:end}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.metric{padding:18px}
+.metric .label{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.metric .value{font-size:clamp(24px,2vw,32px);font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:10px}
+.metric .sub{color:var(--soft);font-size:13px;line-height:1.45}
+.grid-main{display:grid;grid-template-columns:1.8fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.grid-journal,.grid-settings{display:grid;grid-template-columns:1fr 1.35fr;gap:18px}
+.summary,.insights,.minis,.swatches{display:grid;gap:12px}
+.minis{grid-template-columns:repeat(3,minmax(0,1fr))}
+.row,.insight,.mini,.swatch{background:var(--panel2);border:1px solid var(--line2);border-radius:16px;padding:14px 16px}
+.row{display:flex;justify-content:space-between;gap:12px}
+.row span,.insight span,.mini span{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+.row strong,.insight strong,.mini strong{font-size:15px;line-height:1.45}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.full{grid-column:1/-1}
+.table-wrap{overflow:auto;border-radius:16px;border:1px solid var(--line2);background:var(--panel2)}
+table{width:100%;border-collapse:collapse;min-width:980px}
+th,td{padding:14px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}
+th{color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+.delete-btn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(251,113,133,.18);background:rgba(251,113,133,.08);color:#ffd7de;cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.pos{color:var(--green)} .neg{color:var(--red)}
+canvas{
+  width:100%;height:auto;display:block;background:
+  linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel2);
+  border:1px solid var(--line2);border-radius:18px
+}
+.settings-note{color:var(--muted);font-size:14px;line-height:1.6}
+.swatch{display:flex;align-items:center;gap:14px}
+.chip{width:28px;height:28px;border-radius:10px;border:1px solid rgba(255,255,255,.1);flex:0 0 28px}
+.navy{background:linear-gradient(180deg,#17304f,#08111f)} .gold{background:#d4af37} .white{background:#f8fbff}
+.footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 16px}
+@media (max-width:1200px){
+  .metrics,.grid-3,.minis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-main,.grid-journal,.grid-settings{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  body{padding:12px}.topbar,.card,.metric{padding:18px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr}
+  .filters,.metrics,.grid-3,.form,.minis,.auth-grid{grid-template-columns:1fr}
+  .topbar{align-items:flex-start}.top-actions{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div>
+    <div class="eyebrow">Premium trading journal</div>
+    <h1>XAUUSD Elite Journal</h1>
+    <p class="subcopy">Professional auth build with Supabase integrated. Sign in, review analytics, update your journal, and keep your dashboard synced from one premium navy, gold, and white interface.</p>
+  </div>
+  <div class="top-actions">
+    <div class="pill" id="userPill">Sign in to continue</div>
+    <button class="btn secondary hidden" id="logoutBtn" type="button">Log out</button>
+  </div>
+</header>
+
+<section id="authView" class="page active">
+  <div class="auth-grid">
+    <div class="card">
+      <div class="section-head"><div><h2>Sign in</h2><p>Access your journal, analytics, and saved trade history.</p></div></div>
+      <form id="signInForm" class="form">
+        <label class="full"><span>Email</span><input name="email" type="email" required></label>
+        <label class="full"><span>Password</span><input name="password" type="password" required></label>
+        <div class="actions full"><button class="btn" type="submit">Sign in</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><h2>Create account</h2><p>Set up a new account using email and password.</p></div></div>
+      <form id="signUpForm" class="form">
+        <label class="full"><span>Email</span><input name="email" type="email" required></label>
+        <label class="full"><span>Password</span><input name="password" type="password" minlength="6" required></label>
+        <div class="actions full"><button class="btn" type="submit">Create account</button></div>
+      </form>
+      <div class="note">Supabase is already connected in this file. Create an account or sign in to open the journal.</div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px;max-width:980px;margin:0 auto;"><div class="status" id="authStatus">Ready to sign in.</div></div>
+</section>
+
+<section id="appView" class="hidden">
+  <nav class="card" style="padding:10px">
+    <div class="tabs">
+      <button class="tab active" data-tab="dashboard" type="button">Dashboard</button>
+      <button class="tab" data-tab="analytics" type="button">Analytics</button>
+      <button class="tab" data-tab="journal" type="button">Journal</button>
+      <button class="tab" data-tab="settings" type="button">Settings</button>
+    </div>
+  </nav>
+
+  <section id="page-dashboard" class="page active">
+    <div class="card">
+      <div class="filters">
+        <label><span>From</span><input id="filterFrom" type="date"></label>
+        <label><span>To</span><input id="filterTo" type="date"></label>
+        <label><span>Session</span><select id="filterSession"><option value="all">All sessions</option></select></label>
+        <label><span>Direction</span><select id="filterDirection"><option value="all">All directions</option><option value="Long">Long</option><option value="Short">Short</option></select></label>
+        <div class="actions"><button class="btn" id="applyFiltersBtn" type="button">Apply filters</button><button class="btn secondary" id="clearFiltersBtn" type="button">Clear</button></div>
+      </div>
+    </div>
+    <div class="metrics" id="metrics"></div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="section-head"><div><h2>Equity curve</h2><p>Running performance across the current filtered dataset.</p></div></div>
+        <canvas id="equityCanvas" width="900" height="330"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><h2>Performance summary</h2><p>Quick professional snapshot of the current results.</p></div></div>
+        <div class="summary" id="summary"></div>
+      </div>
+    </div>
+    <div class="minis" id="minis"></div>
+  </section>
+
+  <section id="page-analytics" class="page">
+    <div class="grid-3">
+      <div class="card"><div class="section-head"><div><h2>Session P/L</h2><p>Compare Asia, London, and New York.</p></div></div><canvas id="sessionCanvas" width="420" height="280"></canvas></div>
+      <div class="card"><div class="section-head"><div><h2>Long vs short</h2><p>Direction bias and profit comparison.</p></div></div><canvas id="directionCanvas" width="420" height="280"></canvas></div>
+      <div class="card"><div class="section-head"><div><h2>Win / loss split</h2><p>Distribution of current filtered outcomes.</p></div></div><canvas id="distributionCanvas" width="420" height="280"></canvas></div>
+    </div>
+    <div class="card"><div class="section-head"><div><h2>Analytics notes</h2><p>Readable insights for the filtered trade set.</p></div></div><div class="insights" id="insights"></div></div>
+  </section>
+
+  <section id="page-journal" class="page">
+    <div class="grid-journal">
+      <div class="card">
+        <div class="section-head"><div><h2>Add trade</h2><p>Every saved trade updates dashboard, analytics, and journal views.</p></div></div>
+        <form id="tradeForm" class="form">
+          <label><span>Date</span><input name="date" type="date" required></label>
+          <label><span>Symbol</span><input name="symbol" type="text" value="XAUUSD" required></label>
+          <label><span>Direction</span><select name="direction" required><option value="Long">Long</option><option value="Short">Short</option></select></label>
+          <label><span>Session</span><select name="session" required><option value="Asia">Asia</option><option value="London">London</option><option value="New York">New York</option></select></label>
+          <label><span>Entry</span><input name="entry" type="number" step="0.01" required></label>
+          <label><span>Exit</span><input name="exit" type="number" step="0.01" required></label>
+          <label><span>Lot size</span><input name="lot_size" type="number" step="0.01" min="0.01" required></label>
+          <label><span>Risk ($)</span><input name="risk_amount" type="number" step="0.01" min="0.01" required></label>
+          <label><span>P/L ($)</span><input name="pnl" type="number" step="0.01" required></label>
+          <label class="full"><span>Notes</span><input name="notes" type="text" placeholder="Setup, model, execution note..."></label>
+          <div class="actions full"><button class="btn" type="submit">Save trade</button><button class="btn secondary" id="clearFormBtn" type="reset">Clear form</button></div>
+        </form>
+        <div class="status" id="dataStatus">Ready.</div>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><h2>Recent trades</h2><p id="tradeCount">0 trades</p></div><div class="actions"><button class="btn secondary" id="syncBtn" type="button">Sync now</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Symbol</th><th>Dir</th><th>Session</th><th>Entry</th><th>Exit</th><th>Lot</th><th>Risk</th><th>P/L</th><th>R</th><th>Notes</th><th></th></tr></thead><tbody id="tradeTable"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-settings" class="page">
+    <div class="grid-settings">
+      <div class="card">
+        <div class="section-head"><div><h2>Cloud controls</h2><p>Export, import, and clear your cloud-synced trade data.</p></div></div>
+        <div class="actions" style="margin-bottom:14px">
+          <button class="btn" id="exportBtn" type="button">Export JSON</button>
+          <label class="file-btn secondary" for="importInput">Import JSON</label>
+          <input id="importInput" type="file" accept="application/json" hidden>
+          <button class="btn danger" id="clearCloudBtn" type="button">Delete all trades</button>
+        </div>
+        <p class="settings-note" id="settingsMessage">Your authenticated trades are stored in Supabase and scoped to your account.</p>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><h2>Visual system</h2><p>Built around your premium navy, gold, and white brief.</p></div></div>
+        <div class="swatches">
+          <div class="swatch"><span class="chip navy"></span><div><strong>Navy</strong><div class="settings-note">Deep trading-platform base tones</div></div></div>
+          <div class="swatch"><span class="chip gold"></span><div><strong>Gold</strong><div class="settings-note">Premium highlight and accent treatment</div></div></div>
+          <div class="swatch"><span class="chip white"></span><div><strong>White</strong><div class="settings-note">High-contrast text and professional clarity</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<div class="footer">All views read from the same authenticated trade dataset, so dashboard, analytics, and journal stay aligned.</div>
+</div>
+
+<script>
+(() => {
+const SUPABASE_URL = "https://wvptlyyxygoyipwbtzmp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_sjRDw_qvLc7FK6FxjPdaCQ_lIYyqWAz";
+const state = { supabase: window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY), user: null, trades: [], filtered: [], filters: { from:"", to:"", session:"all", direction:"all" }, tab: "dashboard" };
+const $ = id => document.getElementById(id);
+const els = { authView: $("authView"), appView: $("appView"), userPill: $("userPill"), logoutBtn: $("logoutBtn"), authStatus: $("authStatus"), signInForm: $("signInForm"), signUpForm: $("signUpForm"), metrics: $("metrics"), summary: $("summary"), minis: $("minis"), insights: $("insights"), filterFrom: $("filterFrom"), filterTo: $("filterTo"), filterSession: $("filterSession"), filterDirection: $("filterDirection"), applyFiltersBtn: $("applyFiltersBtn"), clearFiltersBtn: $("clearFiltersBtn"), equityCanvas: $("equityCanvas"), sessionCanvas: $("sessionCanvas"), directionCanvas: $("directionCanvas"), distributionCanvas: $("distributionCanvas"), tradeForm: $("tradeForm"), dataStatus: $("dataStatus"), tradeCount: $("tradeCount"), tradeTable: $("tradeTable"), syncBtn: $("syncBtn"), exportBtn: $("exportBtn"), importInput: $("importInput"), clearCloudBtn: $("clearCloudBtn"), settingsMessage: $("settingsMessage"), tabs: [...document.querySelectorAll(".tab")], pages: { dashboard: $("page-dashboard"), analytics: $("page-analytics"), journal: $("page-journal"), settings: $("page-settings") } };
+const n = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+const money = v => n(v).toLocaleString(undefined, { style:"currency", currency:"USD", maximumFractionDigits:2 });
+const negMoney = v => "-" + Math.abs(n(v)).toLocaleString(undefined, { style:"currency", currency:"USD", maximumFractionDigits:2 });
+const num = (v, d=2) => n(v).toLocaleString(undefined, { minimumFractionDigits:d, maximumFractionDigits:d });
+const pct = v => `${num(v,1)}%`;
+const setStatus = (el, msg, type="") => { el.textContent = msg; el.className = `status ${type}`.trim(); };
+
+function normalizeTrade(t) {
+  const risk = Math.max(0.01, n(t.risk_amount));
+  const pnl = n(t.pnl);
+  return { id: t.id, user_id: t.user_id, date: t.date || new Date().toISOString().slice(0,10), symbol: String(t.symbol || "XAUUSD").trim() || "XAUUSD", direction: t.direction === "Short" ? "Short" : "Long", session: ["Asia","London","New York"].includes(t.session) ? t.session : "London", entry: n(t.entry), exit: n(t.exit), lot_size: Math.max(0.01, n(t.lot_size)), risk_amount: risk, pnl, notes: String(t.notes || "").trim(), r: pnl / risk };
+}
+function updateAuthUI() {
+  const signed = !!state.user;
+  els.authView.classList.toggle("hidden", signed);
+  els.appView.classList.toggle("hidden", !signed);
+  els.logoutBtn.classList.toggle("hidden", !signed);
+  els.userPill.textContent = signed ? state.user.email : "Sign in to continue";
+}
+async function refreshSession() {
+  const { data, error } = await state.supabase.auth.getSession();
+  if (error) return setStatus(els.authStatus, error.message, "err");
+  state.user = data.session?.user || null;
+  updateAuthUI();
+  if (state.user) { setStatus(els.authStatus, `Signed in as ${state.user.email}`, "ok"); await loadTrades(); refreshAll(); } else { seedEmpty(); }
+}
+async function signIn(e) {
+  e.preventDefault();
+  const fd = new FormData(els.signInForm);
+  setStatus(els.authStatus, "Signing in...");
+  const { error } = await state.supabase.auth.signInWithPassword({ email: fd.get("email"), password: fd.get("password") });
+  if (error) return setStatus(els.authStatus, error.message, "err");
+  els.signInForm.reset();
+  await refreshSession();
+}
+async function signUp(e) {
+  e.preventDefault();
+  const fd = new FormData(els.signUpForm);
+  setStatus(els.authStatus, "Creating account...");
+  const { data, error } = await state.supabase.auth.signUp({ email: fd.get("email"), password: fd.get("password") });
+  if (error) return setStatus(els.authStatus, error.message, "err");
+  els.signUpForm.reset();
+  setStatus(els.authStatus, data.user && !data.session ? "Account created. Check your email if confirmation is enabled." : "Account created and signed in.", "ok");
+  await refreshSession();
+}
+async function signOut() {
+  const { error } = await state.supabase.auth.signOut();
+  if (error) return setStatus(els.authStatus, error.message, "err");
+  state.user = null; state.trades = []; state.filtered = []; updateAuthUI(); seedEmpty(); setStatus(els.authStatus, "Signed out.", "ok");
+}
+async function loadTrades() {
+  if (!state.user) return;
+  setStatus(els.dataStatus, "Syncing trades...");
+  const { data, error } = await state.supabase.from("trades").select("*").eq("user_id", state.user.id).order("date", { ascending:false }).order("created_at", { ascending:false });
+  if (error) return setStatus(els.dataStatus, error.message, "err");
+  state.trades = (data || []).map(normalizeTrade);
+  populateSessions();
+  setStatus(els.dataStatus, "Trades synced from Supabase.", "ok");
+}
+function populateSessions() {
+  const sessions = [...new Set(state.trades.map(t => t.session))];
+  els.filterSession.innerHTML = `<option value="all">All sessions</option>` + sessions.map(s => `<option value="${s}">${s}</option>`).join("");
+  els.filterSession.value = state.filters.session;
+}
+function applyFilters() {
+  state.filters.from = els.filterFrom.value; state.filters.to = els.filterTo.value; state.filters.session = els.filterSession.value; state.filters.direction = els.filterDirection.value;
+  state.filtered = state.trades.filter(t => { if (state.filters.from && t.date < state.filters.from) return false; if (state.filters.to && t.date > state.filters.to) return false; if (state.filters.session !== "all" && t.session !== state.filters.session) return false; if (state.filters.direction !== "all" && t.direction !== state.filters.direction) return false; return true; }).sort((a,b) => a.date.localeCompare(b.date));
+}
+function calc(trades) {
+  const wins = trades.filter(t => t.pnl > 0), losses = trades.filter(t => t.pnl < 0), totalTrades = trades.length;
+  const grossProfit = wins.reduce((s,t) => s + t.pnl, 0), grossLoss = losses.reduce((s,t) => s + Math.abs(t.pnl), 0), netProfit = trades.reduce((s,t) => s + t.pnl, 0), winRate = totalTrades ? wins.length / totalTrades * 100 : 0, profitFactor = grossLoss === 0 ? (grossProfit > 0 ? grossProfit : 0) : grossProfit / grossLoss, expectancy = totalTrades ? trades.reduce((s,t) => s + t.r, 0) / totalTrades : 0;
+  let running = 0, peak = 0, maxDD = 0;
+  const equity = trades.map(t => { running += t.pnl; peak = Math.max(peak, running); maxDD = Math.max(maxDD, peak - running); return { label:t.date, value:running }; });
+  const sessionTotals = ["Asia","London","New York"].map(label => ({ label, value: trades.filter(t => t.session === label).reduce((s,t) => s + t.pnl, 0) }));
+  const directionTotals = [{ label:"Long", value: trades.filter(t => t.direction === "Long").reduce((s,t) => s + t.pnl, 0) }, { label:"Short", value: trades.filter(t => t.direction === "Short").reduce((s,t) => s + t.pnl, 0) }];
+  const best = trades.reduce((a,b) => !a || b.pnl > a.pnl ? b : a, null), worst = trades.reduce((a,b) => !a || b.pnl < a.pnl ? b : a, null);
+  return { totalTrades, wins: wins.length, losses: losses.length, grossProfit, grossLoss, netProfit, winRate, profitFactor, expectancy, avgR: expectancy, maxDD, equity, sessionTotals, directionTotals, best, worst, longCount: trades.filter(t => t.direction === "Long").length, shortCount: trades.filter(t => t.direction === "Short").length };
+}
+function renderMetrics(m) {
+  const items = [["Net Profit", money(m.netProfit), "Filtered trade performance"], ["Win Rate", pct(m.winRate), `${m.wins} wins / ${m.losses} losses`], ["Profit Factor", num(m.profitFactor), "Gross profit ÷ gross loss"], ["Expectancy", `${num(m.expectancy)}R`, "Average R per trade"], ["Max Drawdown", m.maxDD ? negMoney(m.maxDD) : money(0), "Peak-to-trough equity drop"], ["Total Trades", String(m.totalTrades), "Current filtered count"]];
+  els.metrics.innerHTML = items.map(([label,value,sub]) => `<div class="metric"><div class="label">${label}</div><div class="value ${label === 'Max Drawdown' ? 'neg' : ''}">${value}</div><div class="sub">${sub}</div></div>`).join("");
+}
+function renderSummary(m) {
+  const rows = [["Gross Profit", money(m.grossProfit)], ["Gross Loss", money(m.grossLoss)], ["Average R", `${num(m.avgR)}R`], ["Best Trade", m.best ? `${money(m.best.pnl)} · ${m.best.notes || m.best.session}` : "—"], ["Worst Trade", m.worst ? `${money(m.worst.pnl)} · ${m.worst.notes || m.worst.session}` : "—"], ["Long P/L", money(m.directionTotals[0].value)], ["Short P/L", money(m.directionTotals[1].value)]];
+  els.summary.innerHTML = rows.map(([a,b]) => `<div class="row"><span>${a}</span><strong>${b}</strong></div>`).join("");
+}
+function renderMinis(m) {
+  const topSession = [...m.sessionTotals].sort((a,b) => b.value - a.value)[0], directionLeader = [...m.directionTotals].sort((a,b) => b.value - a.value)[0];
+  const items = [["Session leader", topSession ? `${topSession.label} · ${money(topSession.value)}` : "—"], ["Direction leader", directionLeader ? `${directionLeader.label} · ${money(directionLeader.value)}` : "—"], ["Trade mix", `${m.longCount} long / ${m.shortCount} short`]];
+  els.minis.innerHTML = items.map(([a,b]) => `<div class="mini"><span>${a}</span><strong>${b}</strong></div>`).join("");
+}
+function renderInsights(m) {
+  const rows = [["Consistency", `${pct(m.winRate)} across current filters`], ["Risk quality", `${num(m.avgR)}R average outcome`], ["Winning side", `${[...m.directionTotals].sort((a,b) => b.value - a.value)[0]?.label || "—"} showing the strongest P/L`], ["Session focus", `${[...m.sessionTotals].sort((a,b) => b.value - a.value)[0]?.label || "—"} is currently leading`]];
+  els.insights.innerHTML = rows.map(([a,b]) => `<div class="insight"><span>${a}</span><strong>${b}</strong></div>`).join("");
+}
+function renderTable() {
+  els.tradeCount.textContent = `${state.filtered.length} ${state.filtered.length === 1 ? "trade" : "trades"}`;
+  if (!state.filtered.length) { els.tradeTable.innerHTML = `<tr><td colspan="12" class="empty">No trades match the current filters.</td></tr>`; return; }
+  els.tradeTable.innerHTML = [...state.filtered].sort((a,b) => b.date.localeCompare(a.date)).map(t => `<tr><td>${t.date}</td><td>${t.symbol}</td><td>${t.direction}</td><td>${t.session}</td><td>${num(t.entry)}</td><td>${num(t.exit)}</td><td>${num(t.lot_size)}</td><td>${money(t.risk_amount)}</td><td class="${t.pnl >= 0 ? 'pos' : 'neg'}">${money(t.pnl)}</td><td class="${t.r >= 0 ? 'pos' : 'neg'}">${num(t.r)}R</td><td>${t.notes || "—"}</td><td><button class="delete-btn" type="button" data-id="${t.id}">✕</button></td></tr>`).join("");
+}
+function ctxFor(canvas) {
+  const ctx = canvas.getContext("2d"), dpr = window.devicePixelRatio || 1, w = canvas.clientWidth || canvas.width, h = canvas.clientHeight || canvas.height;
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); return { ctx, w, h };
+}
+function rr(ctx,x,y,w,h,r) { const rad = Math.min(r, w/2, h/2); ctx.beginPath(); ctx.moveTo(x+rad,y); ctx.arcTo(x+w,y,x+w,y+h,rad); ctx.arcTo(x+w,y+h,x,y+h,rad); ctx.arcTo(x,y+h,x,y,rad); ctx.arcTo(x,y,x+w,y,rad); ctx.closePath(); }
+function emptyChart(canvas,msg) { const { ctx,w,h } = ctxFor(canvas); ctx.fillStyle = "#9aa7bc"; ctx.font = "14px Arial"; ctx.textAlign = "center"; ctx.fillText(msg, w/2, h/2); }
+function lineChart(canvas,pts) {
+  if (!pts.length) return emptyChart(canvas,"No data");
+  const { ctx,w,h } = ctxFor(canvas), pad = { t:24, r:18, b:34, l:48 }, vals = pts.map(p => p.value), min = Math.min(...vals,0), max = Math.max(...vals,0), range = max - min || 1;
+  ctx.strokeStyle = "rgba(255,255,255,.08)";
+  for (let i=0;i<5;i++) { const y = pad.t + (i/4) * (h-pad.t-pad.b); ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
+  const coords = pts.map((p,i) => ({ x: pad.l + (i / Math.max(1,pts.length-1)) * (w-pad.l-pad.r), y: h-pad.b - ((p.value-min)/range) * (h-pad.t-pad.b) }));
+  const g = ctx.createLinearGradient(0,pad.t,0,h-pad.b); g.addColorStop(0,"rgba(212,175,55,.34)"); g.addColorStop(1,"rgba(212,175,55,.02)");
+  ctx.beginPath(); ctx.moveTo(coords[0].x,h-pad.b); coords.forEach(c => ctx.lineTo(c.x,c.y)); ctx.lineTo(coords[coords.length-1].x,h-pad.b); ctx.closePath(); ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath(); coords.forEach((c,i) => i===0 ? ctx.moveTo(c.x,c.y) : ctx.lineTo(c.x,c.y)); ctx.strokeStyle = "#d4af37"; ctx.lineWidth = 3; ctx.stroke();
+}
+function barChart(canvas,items) {
+  if (!items.length) return emptyChart(canvas,"No data");
+  const { ctx,w,h } = ctxFor(canvas), pad = { t:20, r:18, b:40, l:40 }, chartH = h-pad.t-pad.b, zeroY = pad.t + chartH/2, maxAbs = Math.max(1, ...items.map(i => Math.abs(i.value)));
+  ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.moveTo(pad.l,zeroY); ctx.lineTo(w-pad.r,zeroY); ctx.stroke();
+  const slot = (w-pad.l-pad.r) / items.length;
+  items.forEach((it,i) => { const bw = Math.min(58, slot*.56), x = pad.l + i*slot + (slot-bw)/2, bh = (Math.abs(it.value)/maxAbs) * (chartH/2-10), y = it.value >= 0 ? zeroY-bh : zeroY, color = it.value >= 0 ? "#34d399" : "#fb7185"; rr(ctx,x,y,bw,bh||2,10); ctx.fillStyle = color; ctx.fill(); ctx.fillStyle = "#f8fbff"; ctx.font = "12px Arial"; ctx.textAlign = "center"; ctx.fillText(it.label, x+bw/2, h-14); });
+}
+function donutChart(canvas,parts) {
+  const total = parts.reduce((s,p) => s+p.value,0); if (!total) return emptyChart(canvas,"No data");
+  const { ctx,w,h } = ctxFor(canvas), cx = w/2, cy = h/2, r = Math.min(w,h)*.26, lw = r*.5; let start = -Math.PI/2;
+  parts.forEach(p => { const slice = (p.value/total) * Math.PI*2; ctx.beginPath(); ctx.arc(cx,cy,r,start,start+slice); ctx.strokeStyle = p.color; ctx.lineWidth = lw; ctx.stroke(); start += slice; });
+  ctx.fillStyle = "#f8fbff"; ctx.font = "700 24px Arial"; ctx.textAlign = "center"; ctx.fillText(String(total), cx, cy-4); ctx.fillStyle = "#b7c2d4"; ctx.font = "13px Arial"; ctx.fillText("Trades", cx, cy+18);
+}
+function renderCharts(m) { lineChart(els.equityCanvas,m.equity); barChart(els.sessionCanvas,m.sessionTotals); barChart(els.directionCanvas,m.directionTotals); donutChart(els.distributionCanvas,[{ label:"Wins", value:m.wins, color:"#34d399" }, { label:"Losses", value:m.losses, color:"#fb7185" }]); }
+function seedEmpty() {
+  els.metrics.innerHTML = ""; els.summary.innerHTML = '<div class="row"><span>Status</span><strong>No trades loaded</strong></div>'; els.minis.innerHTML = '<div class="mini"><span>Ready</span><strong>Sign in and start tracking trades</strong></div>'; els.insights.innerHTML = '<div class="insight"><span>Analytics</span><strong>Your insights will appear here after trades are loaded.</strong></div>'; els.tradeTable.innerHTML = '<tr><td colspan="12" class="empty">No trades loaded.</td></tr>'; emptyChart(els.equityCanvas,"No data"); emptyChart(els.sessionCanvas,"No data"); emptyChart(els.directionCanvas,"No data"); emptyChart(els.distributionCanvas,"No data");
+}
+function refreshAll() { applyFilters(); const m = calc(state.filtered); renderMetrics(m); renderSummary(m); renderMinis(m); renderInsights(m); renderTable(); renderCharts(m); }
+function setTab(tab) { state.tab = tab; els.tabs.forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab)); Object.entries(els.pages).forEach(([k,p]) => p.classList.toggle("active", k === tab)); }
+async function saveTrade(e) {
+  e.preventDefault(); if (!state.user) return;
+  const fd = new FormData(els.tradeForm);
+  const payload = { user_id: state.user.id, date: fd.get("date"), symbol: fd.get("symbol"), direction: fd.get("direction"), session: fd.get("session"), entry: n(fd.get("entry")), exit: n(fd.get("exit")), lot_size: n(fd.get("lot_size")), risk_amount: n(fd.get("risk_amount")), pnl: n(fd.get("pnl")), notes: fd.get("notes") };
+  setStatus(els.dataStatus,"Saving trade...");
+  const { error } = await state.supabase.from("trades").insert(payload);
+  if (error) return setStatus(els.dataStatus,error.message,"err");
+  els.tradeForm.reset(); initForm(); await loadTrades(); refreshAll(); setStatus(els.dataStatus,"Trade saved to Supabase.","ok");
+}
+async function deleteTrade(id) {
+  const { error } = await state.supabase.from("trades").delete().eq("id",id).eq("user_id", state.user.id);
+  if (error) return setStatus(els.dataStatus,error.message,"err");
+  await loadTrades(); refreshAll(); setStatus(els.dataStatus,"Trade deleted.","ok");
+}
+function initForm() { const today = new Date().toISOString().slice(0,10); els.tradeForm.elements.date.value = today; els.tradeForm.elements.symbol.value = "XAUUSD"; els.tradeForm.elements.entry.value = "0"; els.tradeForm.elements.exit.value = "0"; els.tradeForm.elements.lot_size.value = "1.00"; els.tradeForm.elements.risk_amount.value = "100"; els.tradeForm.elements.pnl.value = "0"; }
+async function exportTrades() {
+  const blob = new Blob([JSON.stringify(state.trades,null,2)], { type:"application/json" }), url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = `xauusd-elite-journal-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); els.settingsMessage.textContent = "Trades exported successfully.";
+}
+async function importTrades(e) {
+  const file = e.target.files && e.target.files[0]; if (!file || !state.user) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || "[]")); if (!Array.isArray(parsed)) throw new Error("Invalid JSON");
+      const rows = parsed.map(r => { const t = normalizeTrade({ ...r, user_id: state.user.id }); return { user_id: state.user.id, date: t.date, symbol: t.symbol, direction: t.direction, session: t.session, entry: t.entry, exit: t.exit, lot_size: t.lot_size, risk_amount: t.risk_amount, pnl: t.pnl, notes: t.notes }; });
+      const { error } = await state.supabase.from("trades").insert(rows); if (error) throw error;
+      await loadTrades(); refreshAll(); els.settingsMessage.textContent = "Trades imported successfully.";
+    } catch (err) { els.settingsMessage.textContent = err.message || "Import failed."; } finally { e.target.value = ""; }
+  };
+  reader.readAsText(file);
+}
+async function clearCloud() {
+  if (!state.user) return;
+  const ok = confirm("Delete all of your saved trades?"); if (!ok) return;
+  const { error } = await state.supabase.from("trades").delete().eq("user_id",state.user.id);
+  if (error) { els.settingsMessage.textContent = error.message; return; }
+  await loadTrades(); refreshAll(); els.settingsMessage.textContent = "All cloud trades deleted.";
+}
+function bind() {
+  els.signInForm.addEventListener("submit", signIn); els.signUpForm.addEventListener("submit", signUp); els.logoutBtn.addEventListener("click", signOut);
+  els.tabs.forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
+  els.applyFiltersBtn.addEventListener("click", refreshAll);
+  els.clearFiltersBtn.addEventListener("click", () => { state.filters = { from:"", to:"", session:"all", direction:"all" }; els.filterFrom.value = ""; els.filterTo.value = ""; els.filterSession.value = "all"; els.filterDirection.value = "all"; refreshAll(); });
+  els.tradeForm.addEventListener("submit", saveTrade);
+  els.tradeTable.addEventListener("click", e => { const btn = e.target.closest(".delete-btn"); if (btn) deleteTrade(btn.dataset.id); });
+  els.syncBtn.addEventListener("click", async () => { await loadTrades(); refreshAll(); });
+  els.exportBtn.addEventListener("click", exportTrades); els.importInput.addEventListener("change", importTrades); els.clearCloudBtn.addEventListener("click", clearCloud); window.addEventListener("resize", refreshAll);
+  state.supabase.auth.onAuthStateChange(async (event, session) => { state.user = session?.user || null; updateAuthUI(); if (state.user) { await loadTrades(); refreshAll(); setStatus(els.authStatus, `Signed in as ${state.user.email}`, "ok"); } else { seedEmpty(); setStatus(els.authStatus, "Ready to sign in."); } });
+}
+async function init() { bind(); initForm(); seedEmpty(); await refreshSession(); if (!state.user) setStatus(els.authStatus,"Ready to sign in."); }
+init();
+})();
+</script>
+</body>
+</html>
