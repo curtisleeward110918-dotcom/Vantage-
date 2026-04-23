@@ -121,11 +121,16 @@ canvas{
 .stack{display:grid;gap:18px}
 .form-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .text-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.trade-card{background:var(--panel2);border:1px solid var(--line2);border-radius:18px;padding:16px;margin-bottom:14px}
+.trade-card{
+  background:var(--panel2);border:1px solid var(--line2);border-radius:18px;padding:16px;margin-bottom:14px
+}
 .trade-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
 .trade-title{font-size:15px;font-weight:800;line-height:1.3}
 .trade-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.tag{display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--text)}
+.tag{
+  display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--text)
+}
 .tag.gold{background:rgba(212,175,55,.10);border-color:rgba(212,175,55,.22);color:#f2d57c}
 .tag.green{background:rgba(52,211,153,.10);border-color:rgba(52,211,153,.22);color:#d8fff0}
 .tag.red{background:rgba(251,113,133,.10);border-color:rgba(251,113,133,.22);color:#ffe0e6}
@@ -140,8 +145,12 @@ canvas{
 .helper-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .helper-card{background:var(--panel2);border:1px solid var(--line2);border-radius:16px;padding:14px}
 .helper-card span{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
-@media (max-width:1200px){.journal-shell{grid-template-columns:1fr}}
-@media (max-width:860px){.form-3,.trade-grid,.helper-grid,.text-grid{grid-template-columns:1fr}}
+@media (max-width:1200px){
+  .journal-shell{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .form-3,.trade-grid,.helper-grid,.text-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -157,7 +166,6 @@ canvas{
     <button class="btn secondary hidden" id="logoutBtn" type="button">Log out</button>
   </div>
 </header>
-
 <section id="authView" class="page active">
   <div class="auth-grid">
     <div class="card">
@@ -180,7 +188,6 @@ canvas{
   </div>
   <div class="card" style="padding:18px;max-width:980px;margin:0 auto;"><div class="status" id="authStatus">Ready to sign in.</div></div>
 </section>
-
 <section id="appView" class="hidden">
   <nav class="card" style="padding:10px">
     <div class="tabs">
@@ -190,7 +197,6 @@ canvas{
       <button class="tab" data-tab="settings" type="button">Settings</button>
     </div>
   </nav>
-
   <section id="page-dashboard" class="page active">
     <div class="card">
       <div class="filters">
@@ -214,7 +220,6 @@ canvas{
     </div>
     <div class="minis" id="minis"></div>
   </section>
-
   <section id="page-analytics" class="page">
     <div class="grid-3">
       <div class="card"><div class="section-head"><div><h2>Session P/L</h2><p>Compare Asia, London, and New York.</p></div></div><canvas id="sessionCanvas" width="420" height="280"></canvas></div>
@@ -223,7 +228,6 @@ canvas{
     </div>
     <div class="card"><div class="section-head"><div><h2>Analytics notes</h2><p>Readable insights for the filtered trade set.</p></div></div><div class="insights" id="insights"></div></div>
   </section>
-
   <section id="page-journal" class="page">
     <div class="journal-shell">
       <div class="stack">
@@ -259,7 +263,6 @@ canvas{
           </form>
           <div class="status" id="dataStatus">Ready.</div>
         </div>
-
         <div class="card">
           <div class="section-head"><div><h2>Review prompts</h2><p>Use these to keep journal entries higher quality and more consistent.</p></div></div>
           <div class="helper-grid">
@@ -269,7 +272,6 @@ canvas{
           </div>
         </div>
       </div>
-
       <div class="stack">
         <div class="card">
           <div class="history-header">
@@ -281,7 +283,6 @@ canvas{
       </div>
     </div>
   </section>
-
   <section id="page-settings" class="page">
     <div class="grid-settings">
       <div class="card">
@@ -304,15 +305,12 @@ canvas{
       </div>
     </div>
   </section>
+  <div class="footer">All views read from the same authenticated trade dataset, so dashboard, analytics, and journal stay aligned.</div>
 </section>
-
-<div class="footer">All views read from the same authenticated trade dataset, so dashboard, analytics, and journal stay aligned.</div>
-</div>
-
 <script>
 (() => {
 const SUPABASE_URL = "https://wvptlyyxygoyipwbtzmp.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cHRseXl4eWdveWlwd2J0em1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTM2NjksImV4cCI6MjA5MTUyOTY2OX0.uuUUrmvR5lEXvuemHkE7ERr0Ef7vULBmkgKeJxJfI18";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
 const state = { supabase: window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY), user: null, trades: [], filtered: [], filters: { from:"", to:"", session:"all", direction:"all" }, tab: "dashboard" };
 const $ = id => document.getElementById(id);
 const els = {
@@ -323,7 +321,8 @@ const els = {
   applyFiltersBtn: $("applyFiltersBtn"), clearFiltersBtn: $("clearFiltersBtn"),
   equityCanvas: $("equityCanvas"), sessionCanvas: $("sessionCanvas"), directionCanvas: $("directionCanvas"), distributionCanvas: $("distributionCanvas"),
   tradeForm: $("tradeForm"), dataStatus: $("dataStatus"), tradeCount: $("tradeCount"), tradeHistoryCards: $("tradeHistoryCards"),
-  syncBtn: $("syncBtn"), exportBtn: $("exportBtn"), importInput: $("importInput"), clearCloudBtn: $("clearCloudBtn"), settingsMessage: $("settingsMessage"),
+  syncBtn: $("syncBtn"), exportBtn: $("exportBtn"), importInput: $("importInput"), clearCloudBtn: $("clearCloudBtn"),
+  settingsMessage: $("settingsMessage"),
   tabs: [...document.querySelectorAll(".tab")],
   pages: { dashboard: $("page-dashboard"), analytics: $("page-analytics"), journal: $("page-journal"), settings: $("page-settings") }
 };
@@ -331,7 +330,6 @@ const n = v => Number.isFinite(Number(v)) ? Number(v) : 0;
 const money = v => n(v).toLocaleString(undefined, { style:"currency", currency:"USD", maximumFractionDigits:2 });
 const num = (v, d=2) => n(v).toLocaleString(undefined, { minimumFractionDigits:d, maximumFractionDigits:d });
 const setStatus = (el, msg, type="") => { el.textContent = msg; el.className = `status ${type}`.trim(); };
-
 function normalizeTrade(t) {
   const risk = Math.max(0.01, n(t.risk_amount));
   const pnl = n(t.pnl);
@@ -349,149 +347,245 @@ function normalizeTrade(t) {
     pre_trade_plan: t.pre_trade_plan || "", execution_notes: t.execution_notes || "", post_trade_review: t.post_trade_review || "",
     notes: t.notes || "", rr_target: t.rr_target || "", r: pnl / risk
   };
-}
-function updateAuthUI() {
+}function updateAuthUI() {
   const signed = !!state.user;
   els.authView.classList.toggle("hidden", signed);
   els.appView.classList.toggle("hidden", !signed);
   els.logoutBtn.classList.toggle("hidden", !signed);
   els.userPill.textContent = signed ? state.user.email : "Sign in to continue";
 }
+
 async function refreshSession() {
   const { data, error } = await state.supabase.auth.getSession();
   if (error) return setStatus(els.authStatus, error.message, "err");
   state.user = data.session?.user || null;
   updateAuthUI();
-  if (state.user) { setStatus(els.authStatus, `Signed in as ${state.user.email}`, "ok"); await loadTrades(); refreshAll(); }
-  else seedEmpty();
+  if (state.user) {
+    setStatus(els.authStatus, `Signed in as ${state.user.email}`, "ok");
+    await loadTrades();
+    refreshAll();
+  } else {
+    seedEmpty();
+  }
 }
+
 async function signIn(e) {
   e.preventDefault();
   const fd = new FormData(els.signInForm);
   setStatus(els.authStatus, "Signing in...");
-  const { error } = await state.supabase.auth.signInWithPassword({ email: fd.get("email"), password: fd.get("password") });
+  const { error } = await state.supabase.auth.signInWithPassword({
+    email: fd.get("email"),
+    password: fd.get("password")
+  });
   if (error) return setStatus(els.authStatus, error.message, "err");
   els.signInForm.reset();
   await refreshSession();
 }
+
 async function signUp(e) {
   e.preventDefault();
   const fd = new FormData(els.signUpForm);
   setStatus(els.authStatus, "Creating account...");
-  const { data, error } = await state.supabase.auth.signUp({ email: fd.get("email"), password: fd.get("password") });
+  const { data, error } = await state.supabase.auth.signUp({
+    email: fd.get("email"),
+    password: fd.get("password")
+  });
   if (error) return setStatus(els.authStatus, error.message, "err");
   els.signUpForm.reset();
-  setStatus(els.authStatus, data.user && !data.session ? "Account created. Check your email if confirmation is enabled." : "Account created and signed in.", "ok");
+  setStatus(
+    els.authStatus,
+    data.user && !data.session
+      ? "Account created. Check email if confirmation is enabled."
+      : "Account created and signed in.",
+    "ok"
+  );
   await refreshSession();
 }
+
 async function signOut() {
-  const { error } = await state.supabase.auth.signOut();
-  if (error) return setStatus(els.authStatus, error.message, "err");
-  state.user = null; state.trades = []; state.filtered = []; updateAuthUI(); seedEmpty(); setStatus(els.authStatus, "Signed out.", "ok");
+  await state.supabase.auth.signOut();
+  state.user = null;
+  state.trades = [];
+  state.filtered = [];
+  updateAuthUI();
+  seedEmpty();
 }
+
 async function loadTrades() {
   if (!state.user) return;
   setStatus(els.dataStatus, "Syncing trades...");
-  const { data, error } = await state.supabase.from("trades").select("*").eq("user_id", state.user.id).order("date", { ascending:false }).order("created_at", { ascending:false });
+  const { data, error } = await state.supabase
+    .from("trades")
+    .select("*")
+    .eq("user_id", state.user.id)
+    .order("date", { ascending: false });
+
   if (error) return setStatus(els.dataStatus, error.message, "err");
+
   state.trades = (data || []).map(normalizeTrade);
   populateSessions();
   setStatus(els.dataStatus, "Trades synced from Supabase.", "ok");
 }
+
 function populateSessions() {
   const sessions = [...new Set(state.trades.map(t => t.session))];
-  els.filterSession.innerHTML = `<option value="all">All sessions</option>` + sessions.map(s => `<option value="${s}">${s}</option>`).join("");
-  els.filterSession.value = state.filters.session;
+  els.filterSession.innerHTML =
+    `<option value="all">All sessions</option>` +
+    sessions.map(s => `<option value="${s}">${s}</option>`).join("");
 }
+
 function applyFilters() {
-  state.filters.from = els.filterFrom.value; state.filters.to = els.filterTo.value; state.filters.session = els.filterSession.value; state.filters.direction = els.filterDirection.value;
-  state.filtered = state.trades.filter(t => { if (state.filters.from && t.date < state.filters.from) return false; if (state.filters.to && t.date > state.filters.to) return false; if (state.filters.session !== "all" && t.session !== state.filters.session) return false; if (state.filters.direction !== "all" && t.direction !== state.filters.direction) return false; return true; }).sort((a,b) => a.date.localeCompare(b.date));
+  state.filters.from = els.filterFrom.value;
+  state.filters.to = els.filterTo.value;
+  state.filters.session = els.filterSession.value;
+  state.filters.direction = els.filterDirection.value;
+
+  state.filtered = state.trades.filter(t => {
+    if (state.filters.from && t.date < state.filters.from) return false;
+    if (state.filters.to && t.date > state.filters.to) return false;
+    if (state.filters.session !== "all" && t.session !== state.filters.session) return false;
+    if (state.filters.direction !== "all" && t.direction !== state.filters.direction) return false;
+    return true;
+  });
 }
+
 function calc(trades) {
-  const wins = trades.filter(t => t.pnl > 0), losses = trades.filter(t => t.pnl < 0), totalTrades = trades.length;
-  const grossProfit = wins.reduce((s,t) => s + t.pnl, 0), grossLoss = losses.reduce((s,t) => s + Math.abs(t.pnl), 0), netProfit = trades.reduce((s,t) => s + t.pnl, 0), winRate = totalTrades ? wins.length / totalTrades * 100 : 0, profitFactor = grossLoss === 0 ? (grossProfit > 0 ? grossProfit : 0) : grossProfit / grossLoss, expectancy = totalTrades ? trades.reduce((s,t) => s + t.r, 0) / totalTrades : 0;
-  let running = 0, peak = 0, maxDD = 0;
-  const equity = trades.map(t => { running += t.pnl; peak = Math.max(peak, running); maxDD = Math.max(maxDD, peak - running); return { label:t.date, value:running }; });
-  const sessionTotals = ["Asia","London","New York"].map(label => ({ label, value: trades.filter(t => t.session === label).reduce((s,t) => s + t.pnl, 0) }));
-  const directionTotals = [{ label:"Long", value: trades.filter(t => t.direction === "Long").reduce((s,t) => s + t.pnl, 0) }, { label:"Short", value: trades.filter(t => t.direction === "Short").reduce((s,t) => s + t.pnl, 0) }];
-  const best = trades.reduce((a,b) => !a || b.pnl > a.pnl ? b : a, null), worst = trades.reduce((a,b) => !a || b.pnl < a.pnl ? b : a, null);
-  return { totalTrades, wins: wins.length, losses: losses.length, grossProfit, grossLoss, netProfit, winRate, profitFactor, expectancy, avgR: expectancy, maxDD, equity, sessionTotals, directionTotals, best, worst, longCount: trades.filter(t => t.direction === "Long").length, shortCount: trades.filter(t => t.direction === "Short").length };
+  const wins = trades.filter(t => t.pnl > 0);
+  const losses = trades.filter(t => t.pnl < 0);
+
+  const grossProfit = wins.reduce((a,b)=>a+b.pnl,0);
+  const grossLoss = Math.abs(losses.reduce((a,b)=>a+b.pnl,0));
+  const netProfit = trades.reduce((a,b)=>a+b.pnl,0);
+
+  return {
+    totalTrades: trades.length,
+    wins: wins.length,
+    losses: losses.length,
+    grossProfit,
+    grossLoss,
+    netProfit,
+    winRate: trades.length ? (wins.length / trades.length) * 100 : 0
+  };
 }
+
 function renderMetrics(m) {
-  const items = [["Net Profit", money(m.netProfit), "Filtered trade performance"], ["Win Rate", `${num(m.winRate,1)}%`, `${m.wins} wins / ${m.losses} losses`], ["Profit Factor", num(m.profitFactor), "Gross profit ÷ gross loss"], ["Expectancy", `${num(m.expectancy)}R`, "Average R per trade"], ["Max Drawdown", m.maxDD ? '-' + money(m.maxDD).replace('$','$') : money(0), "Peak-to-trough equity drop"], ["Total Trades", String(m.totalTrades), "Current filtered count"]];
-  els.metrics.innerHTML = items.map(([label,value,sub]) => `<div class="metric"><div class="label">${label}</div><div class="value ${label === 'Max Drawdown' ? 'neg' : ''}">${value}</div><div class="sub">${sub}</div></div>`).join("");
+  els.metrics.innerHTML = `
+    <div class="metric"><div class="label">Net Profit</div><div class="value">${money(m.netProfit)}</div></div>
+    <div class="metric"><div class="label">Trades</div><div class="value">${m.totalTrades}</div></div>
+    <div class="metric"><div class="label">Wins</div><div class="value">${m.wins}</div></div>
+    <div class="metric"><div class="label">Losses</div><div class="value">${m.losses}</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${num(m.winRate,1)}%</div></div>
+    <div class="metric"><div class="label">Gross Profit</div><div class="value">${money(m.grossProfit)}</div></div>
+  `;
 }
-function renderSummary(m) {
-  const rows = [["Gross Profit", money(m.grossProfit)], ["Gross Loss", money(m.grossLoss)], ["Average R", `${num(m.avgR)}R`], ["Best Trade", m.best ? `${money(m.best.pnl)} · ${m.best.setup_name || m.best.session}` : "—"], ["Worst Trade", m.worst ? `${money(m.worst.pnl)} · ${m.worst.setup_name || m.worst.session}` : "—"], ["Long P/L", money(m.directionTotals[0].value)], ["Short P/L", money(m.directionTotals[1].value)]];
-  els.summary.innerHTML = rows.map(([a,b]) => `<div class="row"><span>${a}</span><strong>${b}</strong></div>`).join("");
-}
-function renderMinis(m) {
-  const topSession = [...m.sessionTotals].sort((a,b) => b.value - a.value)[0], directionLeader = [...m.directionTotals].sort((a,b) => b.value - a.value)[0];
-  const items = [["Session leader", topSession ? `${topSession.label} · ${money(topSession.value)}` : "—"], ["Direction leader", directionLeader ? `${directionLeader.label} · ${money(directionLeader.value)}` : "—"], ["Trade mix", `${m.longCount} long / ${m.shortCount} short`]];
-  els.minis.innerHTML = items.map(([a,b]) => `<div class="mini"><span>${a}</span><strong>${b}</strong></div>`).join("");
-}
-function renderInsights(m) {
-  const rows = [["Consistency", `${num(m.winRate,1)}% across current filters`], ["Risk quality", `${num(m.avgR)}R average outcome`], ["Winning side", `${[...m.directionTotals].sort((a,b) => b.value - a.value)[0]?.label || "—"} showing the strongest P/L`], ["Session focus", `${[...m.sessionTotals].sort((a,b) => b.value - a.value)[0]?.label || "—"} is currently leading`]];
-  els.insights.innerHTML = rows.map(([a,b]) => `<div class="insight"><span>${a}</span><strong>${b}</strong></div>`).join("");
-}
+
 function renderTradeCards() {
-  els.tradeCount.textContent = `${state.filtered.length} ${state.filtered.length === 1 ? "trade" : "trades"}`;
-  if (!state.filtered.length) { els.tradeHistoryCards.innerHTML = `<div class="empty">No trades match the current filters.</div>`; return; }
-  els.tradeHistoryCards.innerHTML = [...state.filtered].sort((a,b) => b.date.localeCompare(a.date)).map(t => {
-    const resultTag = t.pnl >= 0 ? `<span class="tag green">${money(t.pnl)}</span>` : `<span class="tag red">${money(t.pnl)}</span>`;
-    const chartLink = t.chart_link ? `<a class="btn secondary" href="${t.chart_link}" target="_blank" rel="noopener">Open chart</a>` : "";
-    return `<div class="trade-card"><div class="trade-card-head"><div><div class="trade-title">${t.setup_name || 'Trade review'} · ${t.symbol}</div><div class="trade-meta"><span class="tag gold">${t.direction}</span><span class="tag">${t.session}</span>${t.timeframe ? `<span class="tag">${t.timeframe}</span>` : ""}${t.entry_model ? `<span class="tag">${t.entry_model}</span>` : ""}${resultTag}</div></div><div class="actions">${chartLink}<button class="btn danger delete-btn" type="button" data-id="${t.id}">Delete</button></div></div><div class="trade-grid"><div class="kv"><span>Date</span><strong>${t.date}</strong></div><div class="kv"><span>Entry / Exit</span><strong>${num(t.entry)} → ${num(t.exit)}</strong></div><div class="kv"><span>Risk / Lot</span><strong>${money(t.risk_amount)} · ${num(t.lot_size)}</strong></div><div class="kv"><span>Result</span><strong class="${t.r >= 0 ? 'pos' : 'neg'}">${num(t.r)}R</strong></div><div class="kv"><span>Stop / Target</span><strong>${t.stop_loss ? num(t.stop_loss) : '—'} / ${t.take_profit ? num(t.take_profit) : '—'}</strong></div><div class="kv"><span>R:R target</span><strong>${t.rr_target ? num(t.rr_target) : '—'}</strong></div><div class="kv"><span>Confidence / Execution</span><strong>${t.confidence_rating || '—'} / ${t.execution_rating || '—'}</strong></div><div class="kv"><span>Psychology</span><strong>${t.psychology_rating || '—'}</strong></div></div><div class="trade-notes"><div class="trade-note"><span>Pre-trade plan</span><strong>${t.pre_trade_plan || '—'}</strong></div><div class="trade-note"><span>Execution notes</span><strong>${t.execution_notes || '—'}</strong></div><div class="trade-note"><span>Post-trade review</span><strong>${t.post_trade_review || '—'}</strong></div><div class="trade-note"><span>Outcome / mistake / quick note</span><strong>${[t.outcome_reason, t.mistake_category, t.notes].filter(Boolean).join(' · ') || '—'}</strong></div></div></div>`;
-  }).join("");
+  els.tradeCount.textContent = `${state.filtered.length} trades`;
+
+  if (!state.filtered.length) {
+    els.tradeHistoryCards.innerHTML = `<div class="empty">No trades found.</div>`;
+    return;
+  }
+
+  els.tradeHistoryCards.innerHTML = state.filtered.map(t => `
+    <div class="trade-card">
+      <div class="trade-card-head">
+        <div class="trade-title">${t.symbol} · ${t.direction}</div>
+        <div class="${t.pnl >= 0 ? 'pos':'neg'}">${money(t.pnl)}</div>
+      </div>
+      <div class="trade-grid">
+        <div class="kv"><span>Date</span><strong>${t.date}</strong></div>
+        <div class="kv"><span>Session</span><strong>${t.session}</strong></div>
+        <div class="kv"><span>Entry</span><strong>${num(t.entry)}</strong></div>
+        <div class="kv"><span>Exit</span><strong>${num(t.exit)}</strong></div>
+      </div>
+    </div>
+  `).join("");
 }
-function ctxFor(canvas) {
-  const ctx = canvas.getContext("2d"), dpr = window.devicePixelRatio || 1, w = canvas.clientWidth || canvas.width, h = canvas.clientHeight || canvas.height;
-  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); return { ctx, w, h };
+
+function refreshAll() {
+  applyFilters();
+  const m = calc(state.filtered);
+  renderMetrics(m);
+  renderTradeCards();
 }
-function rr(ctx,x,y,w,h,r) { const rad = Math.min(r, w/2, h/2); ctx.beginPath(); ctx.moveTo(x+rad,y); ctx.arcTo(x+w,y,x+w,y+h,rad); ctx.arcTo(x+w,y+h,x,y+h,rad); ctx.arcTo(x,y+h,x,y,rad); ctx.arcTo(x,y,x+w,y,rad); ctx.closePath(); }
-function emptyChart(canvas,msg) { const { ctx,w,h } = ctxFor(canvas); ctx.fillStyle = "#9aa7bc"; ctx.font = "14px Arial"; ctx.textAlign = "center"; ctx.fillText(msg, w/2, h/2); }
-function lineChart(canvas,pts) { if (!pts.length) return emptyChart(canvas,"No data"); const { ctx,w,h } = ctxFor(canvas), pad = { t:24, r:18, b:34, l:48 }, vals = pts.map(p => p.value), min = Math.min(...vals,0), max = Math.max(...vals,0), range = max - min || 1; ctx.strokeStyle = "rgba(255,255,255,.08)"; for (let i=0;i<5;i++) { const y = pad.t + (i/4) * (h-pad.t-pad.b); ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); } const coords = pts.map((p,i) => ({ x: pad.l + (i / Math.max(1,pts.length-1)) * (w-pad.l-pad.r), y: h-pad.b - ((p.value-min)/range) * (h-pad.t-pad.b) })); const g = ctx.createLinearGradient(0,pad.t,0,h-pad.b); g.addColorStop(0,"rgba(212,175,55,.34)"); g.addColorStop(1,"rgba(212,175,55,.02)"); ctx.beginPath(); ctx.moveTo(coords[0].x,h-pad.b); coords.forEach(c => ctx.lineTo(c.x,c.y)); ctx.lineTo(coords[coords.length-1].x,h-pad.b); ctx.closePath(); ctx.fillStyle = g; ctx.fill(); ctx.beginPath(); coords.forEach((c,i) => i===0 ? ctx.moveTo(c.x,c.y) : ctx.lineTo(c.x,c.y)); ctx.strokeStyle = "#d4af37"; ctx.lineWidth = 3; ctx.stroke(); }
-function barChart(canvas,items) { if (!items.length) return emptyChart(canvas,"No data"); const { ctx,w,h } = ctxFor(canvas), pad = { t:20, r:18, b:40, l:40 }, chartH = h-pad.t-pad.b, zeroY = pad.t + chartH/2, maxAbs = Math.max(1, ...items.map(i => Math.abs(i.value))); ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.moveTo(pad.l,zeroY); ctx.lineTo(w-pad.r,zeroY); ctx.stroke(); const slot = (w-pad.l-pad.r) / items.length; items.forEach((it,i) => { const bw = Math.min(58, slot*.56), x = pad.l + i*slot + (slot-bw)/2, bh = (Math.abs(it.value)/maxAbs) * (chartH/2-10), y = it.value >= 0 ? zeroY-bh : zeroY, color = it.value >= 0 ? "#34d399" : "#fb7185"; rr(ctx,x,y,bw,bh||2,10); ctx.fillStyle = color; ctx.fill(); ctx.fillStyle = "#f8fbff"; ctx.font = "12px Arial"; ctx.textAlign = "center"; ctx.fillText(it.label, x+bw/2, h-14); }); }
-function donutChart(canvas,parts) { const total = parts.reduce((s,p) => s+p.value,0); if (!total) return emptyChart(canvas,"No data"); const { ctx,w,h } = ctxFor(canvas), cx = w/2, cy = h/2, r = Math.min(w,h)*.26, lw = r*.5; let start = -Math.PI/2; parts.forEach(p => { const slice = (p.value/total) * Math.PI*2; ctx.beginPath(); ctx.arc(cx,cy,r,start,start+slice); ctx.strokeStyle = p.color; ctx.lineWidth = lw; ctx.stroke(); start += slice; }); ctx.fillStyle = "#f8fbff"; ctx.font = "700 24px Arial"; ctx.textAlign = "center"; ctx.fillText(String(total), cx, cy-4); ctx.fillStyle = "#b7c2d4"; ctx.font = "13px Arial"; ctx.fillText("Trades", cx, cy+18); }
-function renderCharts(m) { lineChart(els.equityCanvas,m.equity); barChart(els.sessionCanvas,m.sessionTotals); barChart(els.directionCanvas,m.directionTotals); donutChart(els.distributionCanvas,[{ label:"Wins", value:m.wins, color:"#34d399" }, { label:"Losses", value:m.losses, color:"#fb7185" }]); }
-function seedEmpty() { els.metrics.innerHTML = ""; els.summary.innerHTML = '<div class="row"><span>Status</span><strong>No trades loaded</strong></div>'; els.minis.innerHTML = '<div class="mini"><span>Ready</span><strong>Sign in and start tracking trades</strong></div>'; els.insights.innerHTML = '<div class="insight"><span>Analytics</span><strong>Your insights will appear here after trades are loaded.</strong></div>'; els.tradeHistoryCards.innerHTML = '<div class="empty">No trades loaded.</div>'; emptyChart(els.equityCanvas,"No data"); emptyChart(els.sessionCanvas,"No data"); emptyChart(els.directionCanvas,"No data"); emptyChart(els.distributionCanvas,"No data"); }
-function refreshAll() { applyFilters(); const m = calc(state.filtered); renderMetrics(m); renderSummary(m); renderMinis(m); renderInsights(m); renderTradeCards(); renderCharts(m); }
-function setTab(tab) { state.tab = tab; els.tabs.forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab)); Object.entries(els.pages).forEach(([k,p]) => p.classList.toggle("active", k === tab)); }
+
+function setTab(tab) {
+  els.tabs.forEach(btn =>
+    btn.classList.toggle("active", btn.dataset.tab === tab)
+  );
+
+  Object.entries(els.pages).forEach(([k,p]) =>
+    p.classList.toggle("active", k === tab)
+  );
+}
+
 async function saveTrade(e) {
-  e.preventDefault(); if (!state.user) return;
+  e.preventDefault();
+
   const fd = new FormData(els.tradeForm);
-  const maybeNum = v => v === "" ? null : Number(v);
+
   const payload = {
     user_id: state.user.id,
-    date: fd.get("date"), symbol: fd.get("symbol"), direction: fd.get("direction"), session: fd.get("session"),
-    setup_name: fd.get("setup_name"), timeframe: fd.get("timeframe"), entry_model: fd.get("entry_model"),
-    entry: n(fd.get("entry")), stop_loss: n(fd.get("stop_loss")), take_profit: n(fd.get("take_profit")), exit: n(fd.get("exit")),
-    lot_size: n(fd.get("lot_size")), risk_amount: n(fd.get("risk_amount")), pnl: n(fd.get("pnl")), rr_target: maybeNum(fd.get("rr_target")),
-    chart_link: fd.get("chart_link"), mistake_category: fd.get("mistake_category"), outcome_reason: fd.get("outcome_reason"),
-    confidence_rating: maybeNum(fd.get("confidence_rating")), execution_rating: maybeNum(fd.get("execution_rating")), psychology_rating: maybeNum(fd.get("psychology_rating")),
-    pre_trade_plan: fd.get("pre_trade_plan"), execution_notes: fd.get("execution_notes"), post_trade_review: fd.get("post_trade_review"), notes: fd.get("notes")
+    date: fd.get("date"),
+    symbol: fd.get("symbol"),
+    direction: fd.get("direction"),
+    session: fd.get("session"),
+    entry: n(fd.get("entry")),
+    exit: n(fd.get("exit")),
+    pnl: n(fd.get("pnl")),
+    risk_amount: n(fd.get("risk_amount")),
+    lot_size: n(fd.get("lot_size")),
+    notes: fd.get("notes")
   };
-  setStatus(els.dataStatus,"Saving trade...");
+
+  setStatus(els.dataStatus, "Saving trade...");
   const { error } = await state.supabase.from("trades").insert(payload);
-  if (error) return setStatus(els.dataStatus,error.message,"err");
-  els.tradeForm.reset(); initForm(); await loadTrades(); refreshAll(); setStatus(els.dataStatus,"Trade saved to Supabase.","ok");
+
+  if (error) return setStatus(els.dataStatus, error.message, "err");
+
+  els.tradeForm.reset();
+  await loadTrades();
+  refreshAll();
+  setStatus(els.dataStatus, "Trade saved successfully.", "ok");
 }
-async function deleteTrade(id) { const { error } = await state.supabase.from("trades").delete().eq("id",id).eq("user_id", state.user.id); if (error) return setStatus(els.dataStatus,error.message,"err"); await loadTrades(); refreshAll(); setStatus(els.dataStatus,"Trade deleted.","ok"); }
-function initForm() { const today = new Date().toISOString().slice(0,10); els.tradeForm.elements.date.value = today; els.tradeForm.elements.symbol.value = "XAUUSD"; els.tradeForm.elements.entry.value = "0"; els.tradeForm.elements.exit.value = "0"; els.tradeForm.elements.lot_size.value = "1.00"; els.tradeForm.elements.risk_amount.value = "100"; els.tradeForm.elements.pnl.value = "0"; }
-async function exportTrades() { const blob = new Blob([JSON.stringify(state.trades,null,2)], { type:"application/json" }), url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = `xauusd-elite-journal-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); els.settingsMessage.textContent = "Trades exported successfully."; }
-async function importTrades(e) { const file = e.target.files && e.target.files[0]; if (!file || !state.user) return; const reader = new FileReader(); reader.onload = async () => { try { const parsed = JSON.parse(String(reader.result || "[]")); if (!Array.isArray(parsed)) throw new Error("Invalid JSON"); const rows = parsed.map(r => { const t = normalizeTrade({ ...r, user_id: state.user.id }); return { user_id: state.user.id, date: t.date, symbol: t.symbol, direction: t.direction, session: t.session, entry: t.entry, stop_loss: t.stop_loss, take_profit: t.take_profit, exit: t.exit, lot_size: t.lot_size, risk_amount: t.risk_amount, pnl: t.pnl, setup_name: t.setup_name, timeframe: t.timeframe, entry_model: t.entry_model, chart_link: t.chart_link, mistake_category: t.mistake_category, outcome_reason: t.outcome_reason, confidence_rating: t.confidence_rating || null, execution_rating: t.execution_rating || null, psychology_rating: t.psychology_rating || null, pre_trade_plan: t.pre_trade_plan, execution_notes: t.execution_notes, post_trade_review: t.post_trade_review, notes: t.notes, rr_target: t.rr_target || null }; }); const { error } = await state.supabase.from("trades").insert(rows); if (error) throw error; await loadTrades(); refreshAll(); els.settingsMessage.textContent = "Trades imported successfully."; } catch (err) { els.settingsMessage.textContent = err.message || "Import failed."; } finally { e.target.value = ""; } }; reader.readAsText(file); }
-async function clearCloud() { if (!state.user) return; const ok = confirm("Delete all of your saved trades?"); if (!ok) return; const { error } = await state.supabase.from("trades").delete().eq("user_id",state.user.id); if (error) { els.settingsMessage.textContent = error.message; return; } await loadTrades(); refreshAll(); els.settingsMessage.textContent = "All cloud trades deleted."; }
+
+function seedEmpty() {
+  els.metrics.innerHTML = "";
+  els.tradeHistoryCards.innerHTML = `<div class="empty">No trades loaded.</div>`;
+}
+
 function bind() {
-  els.signInForm.addEventListener("submit", signIn); els.signUpForm.addEventListener("submit", signUp); els.logoutBtn.addEventListener("click", signOut);
-  els.tabs.forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
-  els.applyFiltersBtn.addEventListener("click", refreshAll);
-  els.clearFiltersBtn.addEventListener("click", () => { state.filters = { from:"", to:"", session:"all", direction:"all" }; els.filterFrom.value = ""; els.filterTo.value = ""; els.filterSession.value = "all"; els.filterDirection.value = "all"; refreshAll(); });
+  els.signInForm.addEventListener("submit", signIn);
+  els.signUpForm.addEventListener("submit", signUp);
+  els.logoutBtn.addEventListener("click", signOut);
   els.tradeForm.addEventListener("submit", saveTrade);
-  els.tradeHistoryCards.addEventListener("click", e => { const btn = e.target.closest(".delete-btn"); if (btn) deleteTrade(btn.dataset.id); });
-  els.syncBtn.addEventListener("click", async () => { await loadTrades(); refreshAll(); });
-  els.exportBtn.addEventListener("click", exportTrades); els.importInput.addEventListener("change", importTrades); els.clearCloudBtn.addEventListener("click", clearCloud); window.addEventListener("resize", refreshAll);
-  state.supabase.auth.onAuthStateChange(async (_event, session) => { state.user = session?.user || null; updateAuthUI(); if (state.user) { await loadTrades(); refreshAll(); setStatus(els.authStatus, `Signed in as ${state.user.email}`, "ok"); } else { seedEmpty(); setStatus(els.authStatus, "Ready to sign in."); } });
+
+  els.tabs.forEach(btn => {
+    btn.addEventListener("click", () => setTab(btn.dataset.tab));
+  });
+
+  els.applyFiltersBtn.addEventListener("click", refreshAll);
+  els.clearFiltersBtn.addEventListener("click", () => {
+    els.filterFrom.value = "";
+    els.filterTo.value = "";
+    els.filterSession.value = "all";
+    els.filterDirection.value = "all";
+    refreshAll();
+  });
+
+  els.syncBtn.addEventListener("click", async () => {
+    await loadTrades();
+    refreshAll();
+  });
 }
-async function init() { bind(); initForm(); seedEmpty(); await refreshSession(); if (!state.user) setStatus(els.authStatus,"Ready to sign in."); }
+
+async function init() {
+  bind();
+  seedEmpty();
+  await refreshSession();
+}
+
 init();
 })();
 </script>
